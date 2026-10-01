@@ -1,0 +1,38 @@
+# =============================================================================
+# wordpress.conf.example — vhost Apache WordPress
+# -----------------------------------------------------------------------------
+# Statut : configuration de référence du lab.
+# Cible  : /etc/apache2/sites-available/wordpress.conf sur WEB-01 ET WEB-02
+# Activation :
+#   sudo a2enmod rewrite remoteip
+#   sudo a2ensite wordpress && sudo a2dissite 000-default
+#   sudo apachectl configtest && sudo systemctl reload apache2
+# =============================================================================
+
+<VirtualHost *:80>
+    ServerName wordpress.lab.local
+    # Le health-check HAProxy et les tests utilisent l'IP : vhost par défaut sur :80
+    ServerAlias 10.0.10.2 10.0.10.1 10.0.10.4
+
+    DocumentRoot /var/www/wordpress
+
+    <Directory /var/www/wordpress>
+        Options FollowSymLinks
+        # Nécessaire pour le .htaccess de WordPress (permaliens)
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    # Pas d'accès direct aux fichiers sensibles
+    <FilesMatch "^(wp-config\.php|readme\.html|license\.txt)$">
+        Require all denied
+    </FilesMatch>
+
+    # IP réelle du client transmise par HAProxy (option forwardfor).
+    # Seul HAProxy est considéré comme proxy de confiance.
+    RemoteIPHeader X-Forwarded-For
+    RemoteIPInternalProxy 10.0.10.2
+
+    ErrorLog ${APACHE_LOG_DIR}/wordpress-error.log
+    CustomLog ${APACHE_LOG_DIR}/wordpress-access.log combined
+</VirtualHost>

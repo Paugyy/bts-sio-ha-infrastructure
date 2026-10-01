@@ -1,0 +1,81 @@
+<?php
+/**
+ * wp-config.php.example — WordPress redondé (WEB-01 10.0.10.1 / WEB-02 10.0.10.4)
+ *
+ * Statut : configuration de référence du lab, anonymisée.
+ * Cible  : /var/www/wordpress/wp-config.php — fichier IDENTIQUE sur WEB-01 et WEB-02.
+ *
+ * Utilisation :
+ *   sudo cp configs/wordpress/wp-config.php.example /var/www/wordpress/wp-config.php
+ *   remplacer chaque <SECRET> (mot de passe SQL + 8 clés/sels)
+ *   sudo chown root:www-data /var/www/wordpress/wp-config.php
+ *   sudo chmod 640 /var/www/wordpress/wp-config.php
+ *
+ * Ne JAMAIS versionner le fichier réel (il est exclu par .gitignore).
+ */
+
+// ** Base de données : toujours via HAProxy, jamais directement un nœud Galera ** //
+define( 'DB_NAME', 'wordpress' );
+define( 'DB_USER', 'wordpress' );
+define( 'DB_PASSWORD', '<SECRET>' );
+define( 'DB_HOST', '10.0.10.2:3306' );
+define( 'DB_CHARSET', 'utf8mb4' );
+define( 'DB_COLLATE', '' );
+
+/**
+ * Clés et sels d'authentification.
+ * Générer des valeurs uniques : https://api.wordpress.org/secret-key/1.1/salt/
+ * Elles DOIVENT être identiques sur WEB-01 et WEB-02, sinon un utilisateur connecté
+ * sur un serveur est déconnecté lorsqu'il est servi par l'autre.
+ */
+define( 'AUTH_KEY',         '<SECRET>' );
+define( 'SECURE_AUTH_KEY',  '<SECRET>' );
+define( 'LOGGED_IN_KEY',    '<SECRET>' );
+define( 'NONCE_KEY',        '<SECRET>' );
+define( 'AUTH_SALT',        '<SECRET>' );
+define( 'SECURE_AUTH_SALT', '<SECRET>' );
+define( 'LOGGED_IN_SALT',   '<SECRET>' );
+define( 'NONCE_SALT',       '<SECRET>' );
+
+$table_prefix = 'wp_';
+
+/**
+ * Adresse publique du site.
+ * Le site est consulté via HAProxy (10.0.10.2) ou via le NAT pfSense (WAN:8081).
+ * WordPress redirige vers l'URL enregistrée : choisir l'URL par laquelle les clients arrivent.
+ * Sans ces lignes, la valeur stockée en base (wp_options) est utilisée.
+ */
+// define( 'WP_HOME',    'http://10.0.10.2' );
+// define( 'WP_SITEURL', 'http://10.0.10.2' );
+
+/**
+ * Derrière un reverse-proxy : faire confiance à X-Forwarded-Proto
+ * uniquement si la requête provient de HAProxy (utile le jour où HTTPS sera ajouté).
+ */
+if ( isset( $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_X_FORWARDED_PROTO'] )
+	&& '10.0.10.2' === $_SERVER['REMOTE_ADDR']
+	&& 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] ) {
+	$_SERVER['HTTPS'] = 'on';
+}
+
+/**
+ * Cohérence entre WEB-01 et WEB-02 :
+ * une mise à jour ou une modification de fichier faite sur UN serveur ne serait pas
+ * présente sur l'autre (Galera ne réplique que la base). Les mises à jour se font
+ * donc manuellement sur WEB-01 puis sont synchronisées (docs/05-wordpress/synchronization.md).
+ */
+define( 'DISALLOW_FILE_EDIT', true );
+define( 'AUTOMATIC_UPDATER_DISABLED', true );
+
+// Mode debug : désactivé en fonctionnement normal
+define( 'WP_DEBUG', false );
+
+/* C'est tout, ne touchez pas à ce qui suit ! Bonne publication. */
+
+/** Chemin absolu vers le dossier de WordPress. */
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', __DIR__ . '/' );
+}
+
+/** Réglage des variables de WordPress et de ses fichiers inclus. */
+require_once ABSPATH . 'wp-settings.php';
