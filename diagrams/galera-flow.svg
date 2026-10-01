@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" width="760" height="340" role="img" aria-labelledby="t d" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title id="t">Réplication Galera</title>
+  <desc id="d">Un client écrit sur MYSQL-02 via HAProxy ; au COMMIT, le write-set est diffusé à MYSQL-01 et MYSQL-03 sur le port 4567, certifié par tous, puis validé.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1e7b46"/></marker>
+    <marker id="k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3b4656"/></marker>
+  </defs>
+  <style>
+    .b{fill:#fff;stroke:#1e7b46;stroke-width:1.5}
+    .n{font-size:14px;font-weight:600;fill:#1c2430}
+    .s{font-size:11px;fill:#4a5565;font-family:Consolas, Menlo, monospace}
+    .t{font-size:12px;fill:#1c2430}
+  </style>
+  <rect width="760" height="340" fill="#ffffff"/>
+  <text x="380" y="26" text-anchor="middle" font-size="16" font-weight="700" fill="#1c2430">Cycle d'une écriture dans Galera</text>
+
+  <rect x="300" y="44" width="160" height="44" rx="6" fill="#fff" stroke="#3b4656"/>
+  <text class="n" x="380" y="64" text-anchor="middle">HAProxy</text>
+  <text class="s" x="380" y="80" text-anchor="middle">10.0.10.2:3306</text>
+  <path d="M380,88 L380,128" stroke="#3b4656" stroke-width="1.6" marker-end="url(#k)"/>
+  <text class="s" x="388" y="112">INSERT … COMMIT</text>
+
+  <rect x="20" y="118" width="720" height="150" rx="10" fill="#e8f5ee" stroke="#1e7b46" stroke-width="1.2"/>
+  <text x="34" y="138" font-size="12" font-weight="700" fill="#1e7b46">VLAN 302 · mon_cluster_galera</text>
+
+  <rect class="b" x="60" y="160" width="160" height="70" rx="6"/>
+  <text class="n" x="140" y="186" text-anchor="middle">MYSQL-01</text>
+  <text class="s" x="140" y="203" text-anchor="middle">10.0.20.1</text>
+  <text class="s" x="140" y="219" text-anchor="middle">certifie · applique</text>
+
+  <rect class="b" x="300" y="160" width="160" height="70" rx="6" stroke-width="2.5"/>
+  <text class="n" x="380" y="186" text-anchor="middle">MYSQL-02</text>
+  <text class="s" x="380" y="203" text-anchor="middle">10.0.20.2</text>
+  <text class="s" x="380" y="219" text-anchor="middle">reçoit l'écriture</text>
+
+  <rect class="b" x="540" y="160" width="160" height="70" rx="6"/>
+  <text class="n" x="620" y="186" text-anchor="middle">MYSQL-03</text>
+  <text class="s" x="620" y="203" text-anchor="middle">10.0.20.3</text>
+  <text class="s" x="620" y="219" text-anchor="middle">certifie · applique</text>
+
+  <path d="M300,195 L222,195" stroke="#1e7b46" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M460,195 L538,195" stroke="#1e7b46" stroke-width="2" marker-end="url(#a)"/>
+  <text class="s" x="261" y="187" text-anchor="middle">:4567</text>
+  <text class="s" x="499" y="187" text-anchor="middle">:4567</text>
+  <text class="s" x="380" y="256" text-anchor="middle">write-set (lignes modifiées) · binlog_format = ROW</text>
+
+  <g class="t">
+    <text x="20" y="292">1. Le client écrit sur un nœud choisi par HAProxy.   2. Au COMMIT, le write-set est diffusé à tous les nœuds.</text>
+    <text x="20" y="310">3. Chaque nœud le certifie (même résultat partout).   4. Validé sur tous, ou rejeté (Deadlock) en cas de conflit.</text>
+    <text x="20" y="328" fill="#5d6878" font-size="11">Retour d'un nœud : IST :4568 (incrémental) ou SST :4444 (copie complète rsync)</text>
+  </g>
+</svg>

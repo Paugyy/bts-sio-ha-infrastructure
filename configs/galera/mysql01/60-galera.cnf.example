@@ -1,0 +1,44 @@
+# =============================================================================
+# 60-galera.cnf.example — MYSQL-01 (10.0.20.1) — VLAN 302 vBDD
+# -----------------------------------------------------------------------------
+# Statut : configuration de référence du lab (MariaDB 10.11 + Galera 4).
+# Cible  : /etc/mysql/mariadb.conf.d/60-galera.cnf sur MYSQL-01
+# Spécifique à ce nœud : wsrep_node_address, wsrep_node_name.
+# Ports à ouvrir ENTRE les nœuds : 3306 (SQL), 4567 (réplication), 4568 (IST), 4444 (SST).
+# =============================================================================
+
+[galera]
+# Active la réplication Galera
+wsrep_on                 = ON
+# Bibliothèque fournie par le paquet galera-4
+wsrep_provider           = /usr/lib/galera/libgalera_smm.so
+
+# Nom du cluster : IDENTIQUE sur les 3 nœuds, sinon le nœud refuse de rejoindre
+wsrep_cluster_name       = "mon_cluster_galera"
+# Liste des membres : IDENTIQUE sur les 3 nœuds.
+# (Seul un bootstrap se fait avec galera_new_cluster, jamais en vidant cette liste.)
+wsrep_cluster_address    = "gcomm://10.0.20.1,10.0.20.2,10.0.20.3"
+
+# Identité de CE nœud : doit correspondre à bind-address dans 50-server.cnf
+wsrep_node_address       = "10.0.20.1"
+wsrep_node_name          = "MYSQL-01"
+
+# Transfert complet d'état (SST) quand un nœud rejoint ou est trop en retard.
+# rsync nécessite le paquet rsync sur TOUS les nœuds (voir INC-04) et bloque le donneur
+# pendant la copie. Alternative sans blocage : mariabackup (paquet mariadb-backup).
+wsrep_sst_method         = rsync
+
+# Prérequis Galera :
+# - réplication par lignes (pas par instruction)
+binlog_format            = ROW
+# - seul InnoDB est transactionnel et répliqué de manière fiable
+default_storage_engine   = InnoDB
+# - mode "interleaved" : évite les verrous de table AUTO-INCREMENT incompatibles
+#   avec la certification multi-maître
+innodb_autoinc_lock_mode = 2
+
+# Threads d'application des écritures reçues (1 suffit en lab)
+wsrep_slave_threads      = 1
+
+# Le fichier Debian d'origine contient "#bind-address = 0.0.0.0" : le laisser commenté,
+# l'adresse d'écoute est définie dans 50-server.cnf.

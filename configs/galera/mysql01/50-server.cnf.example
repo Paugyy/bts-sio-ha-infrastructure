@@ -1,0 +1,39 @@
+# =============================================================================
+# 50-server.cnf.example — MYSQL-01 (10.0.20.1) — VLAN 302 vBDD
+# -----------------------------------------------------------------------------
+# Statut : configuration de référence du lab (MariaDB 10.11, Debian 12).
+# Cible  : /etc/mysql/mariadb.conf.d/50-server.cnf sur MYSQL-01
+# Seule la ligne bind-address diffère d'un nœud à l'autre.
+# =============================================================================
+
+[server]
+
+[mysqld]
+user                    = mysql
+pid-file                = /run/mysqld/mysqld.pid
+basedir                 = /usr
+datadir                 = /var/lib/mysql
+tmpdir                  = /tmp
+lc-messages-dir         = /usr/share/mysql
+lc-messages             = en_US
+skip-external-locking
+
+# IMPORTANT : la valeur par défaut Debian est 127.0.0.1.
+# Avec 127.0.0.1, ni HAProxy ni les autres nœuds ne peuvent joindre ce serveur
+# ("Connection refused") — voir docs/09-troubleshooting/incidents.md (INC-02).
+# On écoute UNIQUEMENT sur l'IP du VLAN vBDD (pas 0.0.0.0).
+bind-address            = 10.0.20.1
+
+# Journaux
+log_error               = /var/log/mysql/error.log
+expire_logs_days        = 10
+
+# Jeu de caractères (WordPress et GLPI utilisent utf8mb4)
+character-set-server    = utf8mb4
+collation-server        = utf8mb4_unicode_ci
+
+[embedded]
+
+[mariadb]
+
+[mariadb-10.11]
