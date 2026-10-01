@@ -1,0 +1,133 @@
+# =============================================================================
+# haproxy.cfg.example — HAProxy 10.0.10.2 (VLAN 301 vWEB)
+# -----------------------------------------------------------------------------
+# Statut     : configuration de référence du lab, anonymisée.
+# Cible      : /etc/haproxy/haproxy.cfg sur la VM HAPROXY (Debian 12, HAProxy 2.6)
+# Utilisation:
+#   sudo cp configs/haproxy/haproxy.cfg.example /etc/haproxy/haproxy.cfg
+#   sudo nano /etc/haproxy/haproxy.cfg          # remplacer <PASSWORD>
+#   sudo haproxy -c -f /etc/haproxy/haproxy.cfg  # vérifier AVANT de recharger
+#   sudo systemctl reload haproxy
+#
+# Services publiés :
+#   10.0.10.2:80    -> WordPress  (WEB-01 10.0.10.1:80, WEB-02 10.0.10.4:80)
+#   10.0.10.2:8080  -> GLPI       (GLPI-01 10.0.10.3:80)
+#   10.0.10.2:3306  -> Galera     (MYSQL-01/02/03 10.0.20.1-3:3306)
+#   10.0.10.2:8404  -> page de statistiques (réservée au VLAN vADMIN)
+# =============================================================================
+
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    chroot /var/lib/haproxy
+    # Socket d'administration : utilisé par scripts/validation/check-haproxy.sh
+    stats socket /run/haproxy/admin.sock mode 660 level admin
+    stats timeout 30s
+    # Compte SYSTÈME créé par le paquet Debian. Ne pas créer d'utilisateur humain
+    # nommé "haproxy" (voir docs/09-troubleshooting/incidents.md) : utiliser "haproxyadmin".
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log     global
+    mode    http
+    option  httplog
+    option  dontlognull
+    # Si un serveur tombe, la requête est renvoyée vers un autre serveur sain,
+    # même si le client possédait un cookie de persistance vers le serveur en panne.
+    option  redispatch
+    retries 3
+    timeout connect 5s
+    timeout client  50s
+    timeout server  50s
+    timeout http-request 10s
+    timeout check   3s
+
+# -----------------------------------------------------------------------------
+# WordPress — HTTP couche 7
+# -----------------------------------------------------------------------------
+frontend fe_wordpress
+    bind 10.0.10.2:80
+    # Transmet l'IP réelle du client aux serveurs web (lue par mod_remoteip)
+    option forwardfor
+    http-request set-header X-Forwarded-Proto http
+    default_backend be_wordpress
+
+backend be_wordpress
+    balance roundrobin
+    # Health-check applicatif : WordPress (PHP + accès base) doit répondre,
+    # pas seulement Apache. Un code 2xx/3xx est considéré comme sain.
+    option httpchk
+    http-check send meth GET uri /wp-login.php ver HTTP/1.1 hdr Host 10.0.10.2
+    http-check expect status 200-399
+    # Persistance de session (connexion à wp-admin) par cookie inséré par HAProxy.
+    # Un client sans cookie (ex. curl) est réparti en round-robin.
+    cookie SRV_WP insert indirect nocache httponly
+    # Rend le failover observable : curl -I http://10.0.10.2 | grep X-Served-By
+    http-response set-header X-Served-By %[srv_name]
+    # inter : intervalle des checks / fall : échecs avant retrait / rise : succès avant réintégration
+    default-server inter 3s fall 3 rise 2
+    server WEB-01 10.0.10.1:80 check cookie web01
+    server WEB-02 10.0.10.4:80 check cookie web02
+
+# -----------------------------------------------------------------------------
+# GLPI — HTTP couche 7 (un seul serveur : SPOF documenté)
+# -----------------------------------------------------------------------------
+frontend fe_glpi
+    bind 10.0.10.2:8080
+    option forwardfor
+    http-request set-header X-Forwarded-Proto http
+    default_backend be_glpi
+
+backend be_glpi
+    option httpchk
+    http-check send meth GET uri / ver HTTP/1.1 hdr Host 10.0.10.3
+    http-check expect status 200-399
+    http-response set-header X-Served-By %[srv_name]
+    server GLPI-01 10.0.10.3:80 check inter 5s fall 3 rise 2
+
+# -----------------------------------------------------------------------------
+# Galera — SQL couche 4 (TCP)
+# -----------------------------------------------------------------------------
+listen galera_cluster
+    bind 10.0.10.2:3306
+    mode tcp
+    option tcplog
+    # Répartition des NOUVELLES connexions entre les 3 nœuds (lecture + écriture).
+    # Limite connue : en écriture concurrente intensive, préférer un écrivain unique
+    # (voir la variante commentée plus bas et docs/04-haproxy/sql-load-balancing.md).
+    balance roundrobin
+    # Check MySQL : handshake + authentification avec un compte SANS privilège ni mot de passe,
+    # restreint à l'IP de HAProxy :
+    #   CREATE USER 'haproxy_check'@'10.0.10.2';
+    # Limite : ne vérifie pas wsrep_local_state (Synced). Amélioration : clustercheck (roadmap).
+    option mysql-check user haproxy_check post-41
+    # Connexions SQL longues (pools PHP, sessions GLPI)
+    timeout client 30m
+    timeout server 30m
+    # on-marked-down shutdown-sessions : coupe les sessions d'un nœud déclaré DOWN
+    # pour que les clients se reconnectent sur un nœud sain.
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+    server MYSQL-01 10.0.20.1:3306 check
+    server MYSQL-02 10.0.20.2:3306 check
+    server MYSQL-03 10.0.20.3:3306 check
+
+    # Variante "écrivain unique" (recommandée en production) :
+    #   server MYSQL-01 10.0.20.1:3306 check
+    #   server MYSQL-02 10.0.20.2:3306 check backup
+    #   server MYSQL-03 10.0.20.3:3306 check backup
+
+# -----------------------------------------------------------------------------
+# Statistiques — accessibles uniquement depuis le VLAN vADMIN
+# -----------------------------------------------------------------------------
+listen stats
+    bind 10.0.10.2:8404
+    mode http
+    acl from_admin src 10.0.30.0/24
+    http-request deny unless from_admin
+    stats enable
+    stats uri /stats
+    stats refresh 10s
+    stats hide-version
+    stats auth admin:<PASSWORD>
