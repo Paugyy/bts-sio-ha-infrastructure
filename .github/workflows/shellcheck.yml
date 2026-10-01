@@ -15,7 +15,7 @@ jobs:
     name: ShellCheck scripts/**/*.sh
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Version de ShellCheck
         run: shellcheck --version

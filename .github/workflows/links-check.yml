@@ -18,7 +18,7 @@ jobs:
     name: Liens internes (bloquant)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: lycheeverse/lychee-action@v2
         with:
           args: --offline --no-progress --exclude-path node_modules './**/*.md'
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: lycheeverse/lychee-action@v2
         with:
           args: --no-progress --max-retries 2 --exclude '<GITHUB_USER>' --exclude 'github\.io' './**/*.md'
