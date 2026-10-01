@@ -1,0 +1,78 @@
+# =============================================================================
+# .gitignore — bts-sio-ha-infrastructure
+# Règle : seuls les fichiers *.example (anonymisés) sont versionnés.
+# =============================================================================
+
+# --- Clés et certificats -----------------------------------------------------
+*.key
+*.pem
+*.crt
+*.csr
+*.p12
+*.pfx
+*.ppk
+id_rsa
+id_rsa.pub
+id_ecdsa
+id_ed25519
+id_ed25519.pub
+known_hosts
+authorized_keys
+
+# --- Secrets / variables d'environnement -------------------------------------
+.env
+*.env
+.env.*
+!.env.example
+secrets/
+credentials/
+.my.cnf
+*.my.cnf
+*.secret
+*.vault
+
+# --- Configurations réelles (seuls les .example sont publiés) ----------------
+configs/**/haproxy.cfg
+configs/**/50-server.cnf
+configs/**/60-galera.cnf
+configs/**/wp-config.php
+configs/**/wordpress.conf
+configs/**/glpi.conf
+configs/**/ssh-config
+configs/**/config
+wp-config.php
+generator/output/
+
+# --- Sauvegardes, exports, dumps ---------------------------------------------
+proxmox
+*.vma
+*.vma.zst
+*.vma.gz
+*.backup
+*.bak
+*.old
+*.orig
+*.sql
+*.sql.gz
+*.dump
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+config-*.xml
+pfsense-config*.xml
+
+# --- Éditeurs / OS -----------------------------------------------------------
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Outils -------------------------------------------------------------------
+node_modules/
+.markdownlint-cli2-cache/
+.lycheecache

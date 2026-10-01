@@ -1,0 +1,8 @@
+# Forcer LF pour tout ce qui est exécuté ou lu sous Linux
+* text=auto eol=lf
+*.sh text eol=lf
+*.example text eol=lf
+*.svg text eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
