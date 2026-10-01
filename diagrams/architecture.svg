@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 640" width="900" height="640" role="img" aria-labelledby="t d" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title id="t">Architecture haute disponibilité</title>
+  <desc id="d">pfSense relie le réseau labo à quatre VLAN. Dans vWEB, HAProxy répartit WordPress vers WEB-01 et WEB-02, publie GLPI-01 et répartit le SQL vers trois nœuds Galera du VLAN vBDD.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3b4656"/>
+    </marker>
+    <style>
+      .box{fill:#fff;stroke:#3b4656;stroke-width:1.4}
+      .name{font-size:14px;font-weight:600;fill:#1c2430}
+      .ip{font-size:12px;fill:#4a5565;font-family:Consolas, Menlo, monospace}
+      .role{font-size:11px;fill:#5d6878}
+      .zone-label{font-size:13px;font-weight:700}
+      .link{stroke:#3b4656;stroke-width:1.6;fill:none}
+      .sql{stroke:#1e7b46;stroke-width:1.6;fill:none;stroke-dasharray:6 4}
+      .repl{stroke:#1e7b46;stroke-width:2;fill:none}
+      .lbl{font-size:11px;fill:#1c2430;font-family:Consolas, Menlo, monospace}
+    </style>
+  </defs>
+
+  <rect width="900" height="640" fill="#ffffff"/>
+  <text x="450" y="28" text-anchor="middle" font-size="18" font-weight="700" fill="#1c2430">Infrastructure haute disponibilité — BTS SIO SISR</text>
+
+  <!-- WAN -->
+  <rect x="300" y="44" width="300" height="40" rx="20" fill="#eef1f5" stroke="#8a95a5"/>
+  <text x="450" y="69" text-anchor="middle" font-size="13" fill="#1c2430">Réseau labo (WAN) 10.4.0.0/24</text>
+
+  <!-- pfSense -->
+  <rect class="box" x="315" y="108" width="270" height="62" rx="6" fill="#fbecea" stroke="#b42318"/>
+  <text class="name" x="450" y="132" text-anchor="middle">pfSense</text>
+  <text class="ip" x="450" y="149" text-anchor="middle">WAN 10.4.0.198</text>
+  <text class="role" x="450" y="163" text-anchor="middle">routage inter-VLAN · NAT · deny-by-default</text>
+  <line class="link" x1="450" y1="84" x2="450" y2="108"/>
+  <text class="lbl" x="458" y="100">NAT :8081 → 10.0.10.2:80</text>
+
+  <!-- vWEB -->
+  <rect x="24" y="210" width="452" height="370" rx="10" fill="#eaf2fb" stroke="#1f5fae" stroke-width="1.4"/>
+  <text class="zone-label" x="40" y="232" fill="#1f5fae">VLAN 301 · vWEB · 10.0.10.0/24</text>
+
+  <rect class="box" x="160" y="262" width="180" height="62" rx="6"/>
+  <text class="name" x="250" y="285" text-anchor="middle">HAProxy</text>
+  <text class="ip" x="250" y="302" text-anchor="middle">10.0.10.2</text>
+  <text class="role" x="250" y="316" text-anchor="middle">:80 · :8080 · :3306 · :8404</text>
+
+  <rect class="box" x="44" y="450" width="124" height="62" rx="6"/>
+  <text class="name" x="106" y="473" text-anchor="middle">WEB-01</text>
+  <text class="ip" x="106" y="490" text-anchor="middle">10.0.10.1</text>
+  <text class="role" x="106" y="504" text-anchor="middle">Apache · WordPress</text>
+
+  <rect class="box" x="188" y="450" width="124" height="62" rx="6"/>
+  <text class="name" x="250" y="473" text-anchor="middle">WEB-02</text>
+  <text class="ip" x="250" y="490" text-anchor="middle">10.0.10.4</text>
+  <text class="role" x="250" y="504" text-anchor="middle">Apache · WordPress</text>
+
+  <rect class="box" x="332" y="450" width="124" height="62" rx="6"/>
+  <text class="name" x="394" y="473" text-anchor="middle">GLPI-01</text>
+  <text class="ip" x="394" y="490" text-anchor="middle">10.0.10.3</text>
+  <text class="role" x="394" y="504" text-anchor="middle">Apache · GLPI</text>
+
+  <path class="link" d="M210,324 L118,448" marker-end="url(#arrow)"/>
+  <path class="link" d="M250,324 L250,448" marker-end="url(#arrow)"/>
+  <path class="link" d="M290,324 L382,448" marker-end="url(#arrow)"/>
+  <text class="lbl" x="104" y="392">:80</text>
+  <text class="lbl" x="256" y="392">:80</text>
+  <text class="lbl" x="344" y="392">:8080→:80</text>
+  <text class="role" x="250" y="536" text-anchor="middle">health-checks HTTP · round-robin · X-Served-By</text>
+  <text class="role" x="250" y="552" text-anchor="middle">rsync des fichiers WEB-01 → WEB-02</text>
+  <text class="role" x="250" y="568" text-anchor="middle" fill="#1e7b46">WEB-01, WEB-02, GLPI-01 → SQL via 10.0.10.2:3306</text>
+
+
+  <!-- vBDD -->
+  <rect x="500" y="210" width="376" height="200" rx="10" fill="#e8f5ee" stroke="#1e7b46" stroke-width="1.4"/>
+  <text class="zone-label" x="516" y="232" fill="#1e7b46">VLAN 302 · vBDD · 10.0.20.0/24</text>
+
+  <rect class="box" x="516" y="262" width="106" height="62" rx="6"/>
+  <text class="name" x="569" y="285" text-anchor="middle">MYSQL-01</text>
+  <text class="ip" x="569" y="302" text-anchor="middle">10.0.20.1</text>
+  <rect class="box" x="635" y="262" width="106" height="62" rx="6"/>
+  <text class="name" x="688" y="285" text-anchor="middle">MYSQL-02</text>
+  <text class="ip" x="688" y="302" text-anchor="middle">10.0.20.2</text>
+  <rect class="box" x="754" y="262" width="106" height="62" rx="6"/>
+  <text class="name" x="807" y="285" text-anchor="middle">MYSQL-03</text>
+  <text class="ip" x="807" y="302" text-anchor="middle">10.0.20.3</text>
+  <text class="role" x="569" y="316" text-anchor="middle">MariaDB 10.11</text>
+  <text class="role" x="688" y="316" text-anchor="middle">MariaDB 10.11</text>
+  <text class="role" x="807" y="316" text-anchor="middle">MariaDB 10.11</text>
+
+  <path class="repl" d="M569,324 L569,350 L807,350 L807,324 M688,324 L688,350"/>
+  <text class="role" x="688" y="372" text-anchor="middle" fill="#1e7b46">Galera 4 · réplication synchrone · quorum 2/3</text>
+  <text class="lbl" x="688" y="390" text-anchor="middle">mon_cluster_galera · 4567 / 4568 / 4444</text>
+
+  <!-- SQL HAProxy vers Galera -->
+  <path class="sql" d="M340,282 L514,282" marker-end="url(#arrow)"/>
+  <text class="lbl" x="352" y="274">SQL :3306 round-robin</text>
+
+  <!-- vADMIN -->
+  <rect x="500" y="430" width="182" height="150" rx="10" fill="#f2edfb" stroke="#6f42c1" stroke-width="1.4"/>
+  <text class="zone-label" x="512" y="452" fill="#6f42c1">303 · vADMIN</text>
+  <text class="role" x="512" y="468">10.0.30.0/24</text>
+  <rect class="box" x="514" y="478" width="154" height="40" rx="6"/>
+  <text class="name" x="591" y="496" text-anchor="middle" font-size="13">ADM-01</text>
+  <text class="ip" x="591" y="511" text-anchor="middle">10.0.30.1</text>
+  <rect class="box" x="514" y="526" width="154" height="40" rx="6"/>
+  <text class="name" x="591" y="544" text-anchor="middle" font-size="13">Guacamole</text>
+  <text class="ip" x="591" y="559" text-anchor="middle">10.0.30.2</text>
+
+  <!-- vUSER -->
+  <rect x="694" y="430" width="182" height="150" rx="10" fill="#fff6e0" stroke="#b7791f" stroke-width="1.4"/>
+  <text class="zone-label" x="706" y="452" fill="#8a5a00">304 · vUSER</text>
+  <text class="role" x="706" y="468">10.0.40.0/24</text>
+  <text class="role" x="706" y="494">Postes utilisateurs</text>
+  <text class="role" x="706" y="512">→ HAProxy :80 / :8080</text>
+  <text class="role" x="706" y="530">uniquement</text>
+
+  <!-- pfSense : trunk vers les 4 VLAN -->
+  <path class="link" d="M450,170 L450,192 M250,192 L888,192 L888,420 L591,420"/>
+  <path class="link" d="M250,192 L250,208" marker-end="url(#arrow)"/>
+  <path class="link" d="M688,192 L688,208" marker-end="url(#arrow)"/>
+  <path class="link" d="M591,420 L591,428" marker-end="url(#arrow)"/>
+  <path class="link" d="M785,420 L785,428" marker-end="url(#arrow)"/>
+  <text class="lbl" x="458" y="186">trunk 802.1Q 301-304</text>
+
+  <text x="450" y="618" text-anchor="middle" font-size="11" fill="#5d6878">Tout flux inter-VLAN traverse pfSense · SPOF documentés : pfSense, HAProxy, GLPI-01, hôte Proxmox</text>
+</svg>
