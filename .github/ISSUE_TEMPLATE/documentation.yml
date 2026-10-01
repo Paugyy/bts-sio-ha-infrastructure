@@ -1,0 +1,24 @@
+name: Documentation
+description: Erreur, imprécision ou manque dans la documentation.
+title: "docs(<section>): <résumé>"
+labels: ["documentation"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page concernée
+      placeholder: docs/03-galera/bootstrap.md
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Erreur
+      description: Ce qui est faux, ambigu ou manquant (commande sans VM cible, IP incohérente, lien cassé...).
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+      description: Correction ou ajout suggéré.

@@ -1,0 +1,10 @@
+# Configuration markdownlint (utilisée par markdownlint-cli2 et le workflow CI)
+default: true
+MD013: false          # longueur de ligne : tableaux et commandes longues autorisés
+MD024:
+  siblings_only: true # titres identiques autorisés dans des sections différentes
+MD033:
+  allowed_elements: [p, img, a, br, details, summary, div, sub, sup, kbd]
+MD041: false          # certains fichiers commencent par un bloc HTML (README)
+MD036: false          # emphase utilisée comme légende ("SUR MYSQL-01")
+MD060: false

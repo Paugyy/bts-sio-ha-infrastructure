@@ -1,0 +1,69 @@
+name: Validate configs
+
+# Contrôles statiques des fichiers de configuration d'exemple.
+# Ce workflow NE teste PAS l'infrastructure : il n'y a ni VLAN, ni Galera, ni backends dans GitHub Actions.
+# Il vérifie : structure du dépôt, absence de secrets, fichiers non vides, syntaxe là où un outil hors-ligne existe.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  repository:
+    name: Structure du dépôt et secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: check-repository.sh
+        run: bash scripts/validation/check-repository.sh --ci
+
+  syntax:
+    name: Syntaxe des exemples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer HAProxy et PHP CLI
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq haproxy php-cli
+
+      - name: HAProxy — vérification de syntaxe (haproxy -c)
+        # -c analyse la configuration sans démarrer le service ni ouvrir de port.
+        # Les backends n'existant pas dans la CI, seuls la syntaxe et la cohérence interne sont validées.
+        run: haproxy -c -f configs/haproxy/haproxy.cfg.example
+
+      - name: PHP — vérification de syntaxe de wp-config.php.example
+        run: php -l configs/wordpress/wp-config.php.example
+
+      - name: Galera — paramètres obligatoires présents
+        run: |
+          set -eu
+          for node in mysql01 mysql02 mysql03; do
+            f="configs/galera/${node}/60-galera.cnf.example"
+            for key in wsrep_on wsrep_provider wsrep_cluster_name wsrep_cluster_address \
+                       wsrep_node_address wsrep_node_name wsrep_sst_method binlog_format \
+                       default_storage_engine innodb_autoinc_lock_mode; do
+              grep -Eq "^[[:space:]]*${key}[[:space:]]*=" "$f" || { echo "::error file=$f::${key} manquant"; exit 1; }
+            done
+            grep -Eq '^[[:space:]]*bind-address[[:space:]]*=[[:space:]]*10\.' "configs/galera/${node}/50-server.cnf.example" \
+              || { echo "::error::bind-address absent ou en 127.0.0.1 pour ${node}"; exit 1; }
+            echo "${node} : OK"
+          done
+
+      - name: Galera — node_address cohérent avec bind-address
+        run: |
+          set -eu
+          for node in mysql01 mysql02 mysql03; do
+            bind=$(grep -E '^[[:space:]]*bind-address' "configs/galera/${node}/50-server.cnf.example" | sed -E 's/.*=[[:space:]]*//')
+            addr=$(grep -E '^[[:space:]]*wsrep_node_address' "configs/galera/${node}/60-galera.cnf.example" | sed -E 's/.*=[[:space:]]*"?([0-9.]+)"?.*/\1/')
+            [ "$bind" = "$addr" ] || { echo "::error::${node} bind-address=${bind} != wsrep_node_address=${addr}"; exit 1; }
+            echo "${node} : ${addr}"
+          done
+
+      - name: JSON du générateur
+        run: python3 -m json.tool generator/examples/reference-infrastructure.json > /dev/null

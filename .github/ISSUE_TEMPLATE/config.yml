@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Signalement de sécurité (privé)
+    url: https://docs.github.com/fr/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability
+    about: Ne publiez jamais de secret ou de vulnérabilité exploitable dans une issue publique.

@@ -1,0 +1,66 @@
+name: Bug
+description: Un script, une configuration ou une procédure ne fonctionne pas comme documenté.
+title: "fix(<composant>): <résumé>"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Ne collez jamais de mot de passe, de clé privée ou de token.** Remplacez-les par `<SECRET>`.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Que se passe-t-il ?
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Composant
+      options:
+        - pfSense / réseau
+        - Galera / MariaDB
+        - HAProxy
+        - WordPress / Apache
+        - GLPI
+        - SSH / sécurité
+        - Scripts
+        - Générateur HTML
+        - Documentation
+        - CI GitHub Actions
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Étapes exactes, en précisant la VM pour chaque commande (ex. « SUR MYSQL-02 »).
+      placeholder: |
+        1. SUR HAPROXY : sudo systemctl restart haproxy
+        2. SUR ADM-01 : ./scripts/validation/check-wordpress.sh
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportement attendu
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Sortie de commande ou extrait de journal (journalctl, /var/log/...). Anonymisé.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Tag ou commit du dépôt, versions logicielles concernées.
+      placeholder: v1.0.0 — Debian 12, MariaDB 10.11.x, HAProxy 2.6.x
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Capture
+      description: Glisser une capture d'écran anonymisée si utile.

@@ -1,0 +1,4 @@
+# Configuration ShellCheck (locale et CI)
+# Les directives "# shellcheck source=../lib/common.sh" sont résolues depuis le dossier du script.
+source-path=SCRIPTDIR
+external-sources=true

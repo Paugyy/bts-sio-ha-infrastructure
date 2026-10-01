@@ -1,0 +1,32 @@
+name: ShellCheck
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ["scripts/**", ".github/workflows/shellcheck.yml"]
+  pull_request:
+    paths: ["scripts/**", ".github/workflows/shellcheck.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: ShellCheck scripts/**/*.sh
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version de ShellCheck
+        run: shellcheck --version
+
+      - name: Analyse statique
+        # -x : suit les "source" (scripts/lib/common.sh)
+        run: |
+          find scripts -type f -name '*.sh' -print0 \
+            | xargs -0 shellcheck -x --severity=style
+
+      - name: Syntaxe bash (bash -n)
+        run: |
+          find scripts -type f -name '*.sh' -print0 \
+            | xargs -0 -n1 bash -n

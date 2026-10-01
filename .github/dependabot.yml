@@ -1,0 +1,12 @@
+# Dependabot : maintient à jour les versions des GitHub Actions utilisées par la CI.
+# Le dépôt ne contient pas de dépendances applicatives (pas de package.json, requirements.txt...).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    labels:
+      - chore
+    commit-message:
+      prefix: "chore(ci)"

@@ -1,0 +1,66 @@
+name: Incident d'infrastructure
+description: Un service du lab est dégradé ou indisponible.
+title: "[INCIDENT] <VM> — <symptôme>"
+labels: ["bug", "high-availability"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suivre d'abord la méthodologie de diagnostic : `docs/09-troubleshooting/diagnostic-methodology.md`.
+        **Aucun secret** dans ce formulaire.
+  - type: dropdown
+    id: vm
+    attributes:
+      label: VM
+      multiple: true
+      options:
+        - pfSense
+        - HAProxy (10.0.10.2)
+        - WEB-01 (10.0.10.1)
+        - WEB-02 (10.0.10.4)
+        - GLPI-01 (10.0.10.3)
+        - MYSQL-01 (10.0.20.1)
+        - MYSQL-02 (10.0.20.2)
+        - MYSQL-03 (10.0.20.3)
+        - ADM-01 (10.0.30.1)
+        - Guacamole (10.0.30.2)
+        - Hôte Proxmox
+    validations:
+      required: true
+  - type: dropdown
+    id: vlan
+    attributes:
+      label: VLAN
+      options:
+        - 301 vWEB
+        - 302 vBDD
+        - 303 vADMIN
+        - 304 vUSER
+        - WAN
+  - type: input
+    id: ip
+    attributes:
+      label: IP
+      placeholder: 10.0.20.2
+  - type: input
+    id: service
+    attributes:
+      label: Service
+      placeholder: mariadb, haproxy, apache2, ssh...
+    validations:
+      required: true
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptôme
+      description: Message d'erreur exact, depuis quand, impact utilisateur.
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commandes déjà testées
+      description: Avec la VM sur laquelle elles ont été lancées et leur sortie.
+      render: text
+    validations:
+      required: true

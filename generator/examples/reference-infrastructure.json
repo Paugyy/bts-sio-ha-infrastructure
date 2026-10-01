@@ -1,0 +1,53 @@
+{
+  "$comment": "Infrastructure de référence du lab BTS SIO HA. Importable dans generator/index.html.",
+  "version": 1,
+  "project": {
+    "name": "bts-sio-ha-infrastructure",
+    "domain": "lab.local"
+  },
+  "wan": {
+    "address": "10.4.0.198",
+    "prefix": 24,
+    "gateway": "10.4.0.254",
+    "natPortWordpress": 8081,
+    "natPortGlpi": 0
+  },
+  "vlans": {
+    "web":   { "id": 301, "name": "vWEB",   "network": "10.0.10.0/24", "gateway": "10.0.10.254" },
+    "db":    { "id": 302, "name": "vBDD",   "network": "10.0.20.0/24", "gateway": "10.0.20.254" },
+    "admin": { "id": 303, "name": "vADMIN", "network": "10.0.30.0/24", "gateway": "10.0.30.254" },
+    "user":  { "id": 304, "name": "vUSER",  "network": "10.0.40.0/24", "gateway": "10.0.40.254" }
+  },
+  "hosts": {
+    "web01":   { "name": "WEB-01",    "ip": "10.0.10.1" },
+    "haproxy": { "name": "HAProxy",   "ip": "10.0.10.2" },
+    "glpi":    { "name": "GLPI-01",   "ip": "10.0.10.3" },
+    "web02":   { "name": "WEB-02",    "ip": "10.0.10.4" },
+    "db1":     { "name": "MYSQL-01",  "ip": "10.0.20.1" },
+    "db2":     { "name": "MYSQL-02",  "ip": "10.0.20.2" },
+    "db3":     { "name": "MYSQL-03",  "ip": "10.0.20.3" },
+    "adm":     { "name": "ADM-01",    "ip": "10.0.30.1" },
+    "guac":    { "name": "Guacamole", "ip": "10.0.30.2" }
+  },
+  "ports": {
+    "http": 80,
+    "glpi": 8080,
+    "sql": 3306,
+    "stats": 8404,
+    "backendHttp": 80
+  },
+  "galera": {
+    "clusterName": "mon_cluster_galera",
+    "sstMethod": "rsync"
+  },
+  "accounts": {
+    "adminUser": "adminsys",
+    "haproxyAdmin": "haproxyadmin",
+    "statsUser": "admin",
+    "checkUser": "haproxy_check",
+    "wpDb": "wordpress",
+    "wpUser": "wordpress",
+    "glpiDb": "glpi",
+    "glpiUser": "glpi"
+  }
+}

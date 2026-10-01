@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Générateur HA Infrastructure</title>
+  <meta name="description" content="Génère les configurations HAProxy, Galera, WordPress, Apache, SSH et pfSense d'une infrastructure haute disponibilité, hors ligne.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <h1>Générateur HA Infrastructure</h1>
+        <p class="subtitle">pfSense · VLAN · HAProxy · Galera 3 nœuds · WordPress x2 · GLPI — fonctionne hors ligne, aucune donnée envoyée</p>
+      </div>
+      <div class="actions">
+        <button type="button" id="load-reference">Charger la référence</button>
+        <label class="button">Importer JSON<input type="file" id="import-json" accept="application/json,.json" hidden></label>
+        <button type="button" id="export-json">Exporter JSON</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel config" aria-labelledby="config-title">
+      <h2 id="config-title">Paramètres</h2>
+      <p class="hint">Les VM sont rattachées à leur VLAN par l'architecture (web, bases, administration). Les mots de passe ne sont jamais demandés : les fichiers contiennent <code>&lt;PASSWORD&gt;</code> / <code>&lt;SECRET&gt;</code>.</p>
+      <form id="config-form" autocomplete="off" novalidate></form>
+    </section>
+
+    <section class="panel output" aria-labelledby="output-title">
+      <h2 id="output-title">Fichiers générés</h2>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <ul id="validation" class="issues"></ul>
+
+      <div class="files">
+        <nav aria-label="Fichiers">
+          <ul id="file-list" class="file-list"></ul>
+        </nav>
+        <div class="viewer">
+          <div class="viewer-bar">
+            <span id="file-meta" class="file-meta"></span>
+            <span class="viewer-actions">
+              <button type="button" id="copy-file">Copier</button>
+              <button type="button" id="download-file">Télécharger</button>
+              <button type="button" id="download-all" class="primary">Tout (Markdown)</button>
+            </span>
+          </div>
+          <pre id="preview" class="preview" tabindex="0"></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Partie du dépôt <code>bts-sio-ha-infrastructure</code> — fichiers à relire avant déploiement ; vérifier la syntaxe sur la VM (<code>haproxy -c</code>, <code>apachectl configtest</code>, <code>php -l</code>).</p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/validation.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/generators.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+# =============================================================================
+# windows-ssh-config.example — C:\Users\<WINDOWS_USER>\.ssh\config (OpenSSH Windows)
+# -----------------------------------------------------------------------------
+# Statut : exemple. Poste Windows situé HORS des VLAN (réseau labo, côté WAN).
+# Toutes les connexions passent par ADM-01 (rebond / ProxyJump) : seul ADM-01
+# doit être joignable depuis l'extérieur, selon la règle NAT/filtrage choisie.
+#
+# Remplacer : <WINDOWS_USER>, <ADMIN_USER>, <ADM01_ADDRESS>, <ADM01_PORT>
+# Générer une clé (PowerShell) :  ssh-keygen -t ed25519 -C "poste-admin"
+# =============================================================================
+
+Host *
+    User <ADMIN_USER>
+    IdentityFile C:/Users/<WINDOWS_USER>/.ssh/id_ed25519
+    IdentitiesOnly yes
+    StrictHostKeyChecking ask
+    ServerAliveInterval 30
+
+# Point d'entrée unique (bastion)
+Host adm01
+    HostName <ADM01_ADDRESS>
+    Port <ADM01_PORT>
+
+# --- VLAN 301 vWEB -----------------------------------------------------------
+Host web01
+    HostName 10.0.10.1
+    ProxyJump adm01
+
+Host haproxy
+    HostName 10.0.10.2
+    User haproxyadmin
+    ProxyJump adm01
+
+Host glpi01
+    HostName 10.0.10.3
+    ProxyJump adm01
+
+Host web02
+    HostName 10.0.10.4
+    ProxyJump adm01
+
+# --- VLAN 302 vBDD -----------------------------------------------------------
+Host mysql01
+    HostName 10.0.20.1
+    ProxyJump adm01
+
+Host mysql02
+    HostName 10.0.20.2
+    ProxyJump adm01
+
+Host mysql03
+    HostName 10.0.20.3
+    ProxyJump adm01

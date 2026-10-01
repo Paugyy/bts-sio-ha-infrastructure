@@ -1,0 +1,45 @@
+# =============================================================================
+# linux-ssh-config.example — ~/.ssh/config sur ADM-01 (10.0.30.1) ou un poste Linux
+# -----------------------------------------------------------------------------
+# Statut : exemple. Remplacer <ADMIN_USER>.
+#   cp configs/ssh/linux-ssh-config.example ~/.ssh/config && chmod 600 ~/.ssh/config
+# La clé PRIVÉE (~/.ssh/id_ed25519) ne quitte jamais le poste d'administration
+# et n'est JAMAIS copiée dans ce dépôt.
+# =============================================================================
+
+Host *
+    User <ADMIN_USER>
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+    # Refuse une clé d'hôte inconnue modifiée (protection contre l'usurpation)
+    StrictHostKeyChecking ask
+    ServerAliveInterval 30
+
+# --- VLAN 301 vWEB -----------------------------------------------------------
+Host web01
+    HostName 10.0.10.1
+
+Host haproxy
+    HostName 10.0.10.2
+    # Compte humain distinct du compte système "haproxy" (incident INC-08)
+    User haproxyadmin
+
+Host glpi01
+    HostName 10.0.10.3
+
+Host web02
+    HostName 10.0.10.4
+
+# --- VLAN 302 vBDD -----------------------------------------------------------
+Host mysql01
+    HostName 10.0.20.1
+
+Host mysql02
+    HostName 10.0.20.2
+
+Host mysql03
+    HostName 10.0.20.3
+
+# --- VLAN 303 vADMIN ---------------------------------------------------------
+Host guacamole
+    HostName 10.0.30.2
