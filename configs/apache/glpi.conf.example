@@ -1,0 +1,43 @@
+# =============================================================================
+# glpi.conf.example — vhost Apache GLPI 10
+# -----------------------------------------------------------------------------
+# Statut : configuration de référence du lab.
+# Cible  : /etc/apache2/sites-available/glpi.conf sur GLPI-01 (10.0.10.3)
+# Activation :
+#   sudo a2enmod rewrite remoteip
+#   sudo a2ensite glpi && sudo a2dissite 000-default
+#   sudo apachectl configtest && sudo systemctl reload apache2
+#
+# Incident INC-05 (404 sur toutes les pages sauf l'accueil) :
+#   GLPI 10 route toutes les requêtes vers public/index.php.
+#   Il faut (1) DocumentRoot sur .../public, (2) mod_rewrite activé,
+#   (3) les RewriteRule DANS le bloc <Directory> (pas au niveau du VirtualHost).
+# =============================================================================
+
+<VirtualHost *:80>
+    ServerName glpi.lab.local
+    ServerAlias 10.0.10.3 10.0.10.2
+
+    # GLPI >= 10.0.7 : seul le dossier public/ est exposé
+    DocumentRoot /var/www/glpi/public
+
+    <Directory /var/www/glpi/public>
+        Require all granted
+
+        RewriteEngine On
+
+        # Transmet l'en-tête Authorization à PHP (API REST GLPI)
+        RewriteCond %{HTTP:Authorization} ^(.+)$
+        RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+        # Toute requête qui ne correspond pas à un fichier réel est routée vers index.php
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteRule ^(.*)$ index.php [QSA,L]
+    </Directory>
+
+    RemoteIPHeader X-Forwarded-For
+    RemoteIPInternalProxy 10.0.10.2
+
+    ErrorLog ${APACHE_LOG_DIR}/glpi-error.log
+    CustomLog ${APACHE_LOG_DIR}/glpi-access.log combined
+</VirtualHost>
