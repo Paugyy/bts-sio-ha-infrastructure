@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 330" width="780" height="330" role="img" aria-labelledby="t d" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <title id="t">Failover web</title>
+  <desc id="d">Trois états : nominal, les deux serveurs reçoivent le trafic ; panne de WEB-01, détectée après trois échecs, tout le trafic va vers WEB-02 ; retour de WEB-01, réintégré après deux succès.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3b4656"/></marker>
+  </defs>
+  <style>
+    .n{font-size:13px;font-weight:600;fill:#1c2430}
+    .s{font-size:11px;fill:#4a5565;font-family:Consolas, Menlo, monospace}
+    .h{font-size:13px;font-weight:700;fill:#1c2430}
+    .up{fill:#e8f5ee;stroke:#1e7b46;stroke-width:1.5}
+    .down{fill:#fdecea;stroke:#b42318;stroke-width:1.5;stroke-dasharray:5 3}
+    .hp{fill:#fff;stroke:#3b4656;stroke-width:1.4}
+    .l{stroke:#3b4656;stroke-width:1.6}
+  </style>
+  <rect width="780" height="330" fill="#ffffff"/>
+  <text x="390" y="26" text-anchor="middle" font-size="16" font-weight="700" fill="#1c2430">Bascule automatique d'un serveur web</text>
+
+  <!-- État 1 -->
+  <text class="h" x="130" y="58" text-anchor="middle">1 · Nominal</text>
+  <rect class="hp" x="70" y="72" width="120" height="40" rx="6"/>
+  <text class="n" x="130" y="97" text-anchor="middle">HAProxy</text>
+  <line class="l" x1="110" y1="112" x2="75" y2="168" marker-end="url(#a)"/>
+  <line class="l" x1="150" y1="112" x2="185" y2="168" marker-end="url(#a)"/>
+  <rect class="up" x="20" y="170" width="100" height="44" rx="6"/>
+  <text class="n" x="70" y="190" text-anchor="middle">WEB-01</text>
+  <text class="s" x="70" y="205" text-anchor="middle">UP</text>
+  <rect class="up" x="140" y="170" width="100" height="44" rx="6"/>
+  <text class="n" x="190" y="190" text-anchor="middle">WEB-02</text>
+  <text class="s" x="190" y="205" text-anchor="middle">UP</text>
+  <text class="s" x="130" y="240" text-anchor="middle">X-Served-By alterne</text>
+
+  <!-- État 2 -->
+  <text class="h" x="390" y="58" text-anchor="middle">2 · Panne de WEB-01</text>
+  <rect class="hp" x="330" y="72" width="120" height="40" rx="6"/>
+  <text class="n" x="390" y="97" text-anchor="middle">HAProxy</text>
+  <line x1="370" y1="112" x2="335" y2="168" stroke="#b42318" stroke-width="1.4" stroke-dasharray="4 4"/>
+  <line class="l" x1="410" y1="112" x2="445" y2="168" marker-end="url(#a)"/>
+  <rect class="down" x="280" y="170" width="100" height="44" rx="6"/>
+  <text class="n" x="330" y="190" text-anchor="middle">WEB-01</text>
+  <text class="s" x="330" y="205" text-anchor="middle" fill="#b42318">DOWN</text>
+  <rect class="up" x="400" y="170" width="100" height="44" rx="6"/>
+  <text class="n" x="450" y="190" text-anchor="middle">WEB-02</text>
+  <text class="s" x="450" y="205" text-anchor="middle">100 % du trafic</text>
+  <text class="s" x="390" y="240" text-anchor="middle">fall 3 × inter 3s ≈ 9 s</text>
+  <text class="s" x="390" y="256" text-anchor="middle">retries + redispatch : 0 erreur</text>
+
+  <!-- État 3 -->
+  <text class="h" x="650" y="58" text-anchor="middle">3 · Retour de WEB-01</text>
+  <rect class="hp" x="590" y="72" width="120" height="40" rx="6"/>
+  <text class="n" x="650" y="97" text-anchor="middle">HAProxy</text>
+  <line class="l" x1="630" y1="112" x2="595" y2="168" marker-end="url(#a)"/>
+  <line class="l" x1="670" y1="112" x2="705" y2="168" marker-end="url(#a)"/>
+  <rect class="up" x="540" y="170" width="100" height="44" rx="6"/>
+  <text class="n" x="590" y="190" text-anchor="middle">WEB-01</text>
+  <text class="s" x="590" y="205" text-anchor="middle">UP</text>
+  <rect class="up" x="660" y="170" width="100" height="44" rx="6"/>
+  <text class="n" x="710" y="190" text-anchor="middle">WEB-02</text>
+  <text class="s" x="710" y="205" text-anchor="middle">UP</text>
+  <text class="s" x="650" y="240" text-anchor="middle">rise 2 × inter 3s ≈ 6 s</text>
+  <text class="s" x="650" y="256" text-anchor="middle">réintégration automatique</text>
+
+  <line x1="255" y1="140" x2="270" y2="140" stroke="#8a95a5" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="515" y1="140" x2="530" y2="140" stroke="#8a95a5" stroke-width="2" marker-end="url(#a)"/>
+
+  <text x="390" y="300" text-anchor="middle" font-size="12" fill="#1c2430">Test : sudo systemctl stop apache2 (SUR WEB-01) puis curl -I http://10.0.10.2 (SUR ADM-01)</text>
+</svg>
