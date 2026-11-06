@@ -10,6 +10,7 @@ Schémas vectoriels (SVG) éditables avec un éditeur de texte ou Inkscape, affi
 | [galera-flow.svg](galera-flow.svg) | Cycle d'une écriture Galera (diffusion, certification) | [concepts.md](../docs/03-galera/concepts.md) |
 | [failover-web.svg](failover-web.svg) | Nominal → panne de WEB-01 → réintégration | [high-availability.md](../docs/01-architecture/high-availability.md), [failover.md](../docs/05-wordpress/failover.md) |
 | [spof.svg](spof.svg) | Composants redondés et points uniques de défaillance | [spof-analysis.md](../docs/01-architecture/spof-analysis.md) |
+| [journalisation.svg](journalisation.svg) | Journalisation centralisée : émetteurs, règles pfSense, services de ZABBIX | [rsyslog-loganalyzer.md](../docs/13-supervision/rsyslog-loganalyzer.md) |
 
 ## Conventions graphiques
 

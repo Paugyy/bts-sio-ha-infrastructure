@@ -4,7 +4,7 @@
 
 **Infrastructure web et base de données haute disponibilité — BTS SIO option SISR**
 
-pfSense · VLAN · HAProxy · MariaDB Galera (3 nœuds) · WordPress redondé · GLPI
+pfSense · VLAN · HAProxy · MariaDB Galera (3 nœuds) · WordPress redondé · GLPI · Zabbix · Rsyslog
 
 [![Documentation](https://img.shields.io/badge/docs-fran%C3%A7ais-0A66C2)](docs/README.md)
 [![Debian](https://img.shields.io/badge/Debian-12-A81D33?logo=debian&logoColor=white)](https://www.debian.org/)
@@ -19,7 +19,7 @@ pfSense · VLAN · HAProxy · MariaDB Galera (3 nœuds) · WordPress redondé ·
 
 > **En 30 secondes** — Ce dépôt documente et permet de reproduire un lab de haute disponibilité :
 > un site WordPress servi par **deux serveurs web** derrière **HAProxy**, adossé à un **cluster MariaDB Galera de 3 nœuds**,
-> avec **GLPI**, le tout segmenté en **VLAN** et filtré par **pfSense**.
+> avec **GLPI**, le tout segmenté en **VLAN** et filtré par **pfSense**, supervisé par **Zabbix**, avec les **journaux centralisés** (Rsyslog + LogAnalyzer).
 >
 > Documentation : [`docs/`](docs/README.md) · Configurations : [`configs/`](configs/README.md) · Tests : [`scripts/`](scripts/README.md) · Reproduction : [ordre de déploiement](docs/00-overview/deployment-order.md)
 
@@ -38,20 +38,22 @@ pfSense · VLAN · HAProxy · MariaDB Galera (3 nœuds) · WordPress redondé ·
 9. [Fonctionnement HAProxy](#fonctionnement-haproxy)
 10. [WordPress redondé](#wordpress-redondé)
 11. [GLPI](#glpi)
-12. [Sécurité](#sécurité)
-13. [Installation rapide](#installation-rapide)
-14. [Documentation complète](#documentation-complète)
-15. [Documentation interactive](#documentation-interactive)
-16. [Tests](#tests)
-17. [Failover validé](#failover-validé)
-18. [Limites](#limites)
-19. [Roadmap](#roadmap)
-20. [BTS SIO](#bts-sio)
-21. [Fiche portfolio](#fiche-portfolio)
-22. [Captures](#captures)
-23. [Structure du dépôt](#structure-du-dépôt)
-24. [Contribuer](#contribuer)
-25. [Licence](#licence)
+12. [Supervision et journalisation](#supervision-et-journalisation)
+13. [Sécurité](#sécurité)
+14. [Installation rapide](#installation-rapide)
+15. [Documentation complète](#documentation-complète)
+16. [Documentation interactive](#documentation-interactive)
+17. [Tests](#tests)
+18. [Failover validé](#failover-validé)
+19. [Limites](#limites)
+20. [Écarts entre la référence et le labo](#écarts-entre-la-référence-et-le-labo)
+21. [Roadmap](#roadmap)
+22. [BTS SIO](#bts-sio)
+23. [Fiche portfolio](#fiche-portfolio)
+24. [Captures](#captures)
+25. [Structure du dépôt](#structure-du-dépôt)
+26. [Contribuer](#contribuer)
+27. [Licence](#licence)
 
 ---
 
@@ -63,7 +65,7 @@ pfSense · VLAN · HAProxy · MariaDB Galera (3 nœuds) · WordPress redondé ·
 | **Problème** | Un site hébergé sur un seul serveur et une seule base de données s'arrête dès qu'une machine tombe |
 | **Solution** | Redonder la couche web (2 WordPress) et la couche données (Galera 3 nœuds), répartir la charge avec HAProxy, isoler les flux par VLAN |
 | **Résultat** | L'arrêt d'un serveur web ou d'un nœud de base de données n'interrompt pas le service |
-| **Statut** | Version 1.0.0 — lab fonctionnel, SPOF restants identifiés et documentés |
+| **Statut** | Version 1.1.0 (06/11/2026) — 12 VM, supervision Zabbix et journaux centralisés ; SPOF restants identifiés et documentés |
 
 ## Objectif du projet
 
@@ -84,8 +86,8 @@ L'infrastructure est découpée en quatre VLAN routés et filtrés par pfSense :
 |------|-----|--------|------------|---------|
 | 301 | vWEB | 10.0.10.0/24 | 10.0.10.254 | HAProxy, WEB-01, WEB-02, GLPI-01 |
 | 302 | vBDD | 10.0.20.0/24 | 10.0.20.254 | MYSQL-01, MYSQL-02, MYSQL-03 |
-| 303 | vADMIN | 10.0.30.0/24 | 10.0.30.254 | ADM-01, Guacamole |
-| 304 | vUSER | 10.0.40.0/24 | 10.0.40.254 | Postes utilisateurs |
+| 303 | vADMIN | 10.0.30.0/24 | 10.0.30.254 | ADM-01 (AD), Guacamole, ZABBIX |
+| 304 | vUSER | 10.0.40.0/24 | 10.0.40.254 | CLI-01 (poste Windows) |
 
 WAN pfSense : `10.4.0.198/24`, passerelle `10.4.0.254` (réseau du laboratoire, non routé sur Internet).
 
@@ -94,7 +96,7 @@ Détails : [architecture-overview.md](docs/01-architecture/architecture-overview
 ## Schéma principal
 
 <p align="center">
-  <img src="diagrams/architecture.svg" alt="Architecture haute disponibilité : pfSense, VLAN, HAProxy, WordPress x2, GLPI, Galera 3 nœuds" width="900">
+  <img src="diagrams/architecture.svg" alt="Architecture haute disponibilité : pfSense, VLAN, HAProxy, WordPress x2, GLPI, Galera 3 nœuds, ZABBIX et journaux centralisés" width="900">
 </p>
 
 Version texte :
@@ -126,7 +128,7 @@ Autres schémas : [diagrams/](diagrams/README.md)
 
 | Domaine | Technologie | Version | Rôle |
 |---------|-------------|---------|------|
-| Virtualisation | Proxmox VE | 8.x | Hébergement des VM |
+| Virtualisation | Proxmox VE | 9.1 | Hébergement des VM |
 | Pare-feu / routage | pfSense CE | 2.7.x | Routage inter-VLAN, NAT, filtrage |
 | Système | Debian | 12 (Bookworm) | Toutes les VM Linux |
 | Répartition de charge | HAProxy | 2.6 (paquet Debian) | HTTP couche 7 + SQL couche 4 |
@@ -135,6 +137,9 @@ Autres schémas : [diagrams/](diagrams/README.md)
 | CMS | WordPress | 6.x | Application redondée |
 | ITSM | GLPI | 10.x | Gestion de parc et tickets |
 | Accès distant | Apache Guacamole | — | Bastion d'administration web |
+| Annuaire | Active Directory | Windows Server 2022 | Domaine `paugy.lan` |
+| Supervision | Zabbix | 7.0 LTS | 12 hôtes supervisés |
+| Journalisation | Rsyslog + LogAnalyzer | Debian 12 · 5.0.2 | Collecte centrale (TCP 514) et consultation web |
 
 ## Plan d'adressage
 
@@ -147,8 +152,10 @@ Autres schémas : [diagrams/](diagrams/README.md)
 | MYSQL-01 | 10.0.20.1 | 302 | Galera |
 | MYSQL-02 | 10.0.20.2 | 302 | Galera |
 | MYSQL-03 | 10.0.20.3 | 302 | Galera |
-| ADM-01 | 10.0.30.1 | 303 | Administration |
+| ADM-01 | 10.0.30.1 | 303 | Contrôleur de domaine AD |
 | Guacamole | 10.0.30.2 | 303 | Accès distant |
+| ZABBIX | 10.0.30.3 | 303 | Supervision, Rsyslog, LogAnalyzer |
+| CLI-01 | 10.0.40.1 | 304 | Poste Windows |
 
 Plan complet (ports, passerelles, services) : [docs/01-architecture/ip-addressing.md](docs/01-architecture/ip-addressing.md)
 
@@ -158,7 +165,7 @@ Plan complet (ports, passerelles, services) : [docs/01-architecture/ip-addressin
 |--------|------------|-----------|-----------|
 | Web | WEB-01 + WEB-02 | HAProxy `balance roundrobin` + health-check HTTP | 1 serveur web sur 2 |
 | Données | MYSQL-01/02/03 | Galera, réplication synchrone, quorum | 1 nœud sur 3 |
-| Accès SQL | HAProxy :3306 | Health-check `mysql-check`, retrait automatique | Nœud indisponible écarté |
+| Accès SQL | HAProxy :3306 | Référence : `mysql-check` en round-robin · labo : `tcp-check`, MYSQL-01 actif, 02 et 03 en `backup` | Nœud indisponible écarté |
 | Répartiteur | HAProxy seul | — | **SPOF** (voir [roadmap](#roadmap)) |
 | Pare-feu | pfSense seul | — | **SPOF** |
 
@@ -196,10 +203,10 @@ Documentation : [docs/03-galera/](docs/03-galera/concepts.md) · Reprise après 
 | `fe_wordpress` → `be_wordpress` | 10.0.10.2:80 | HTTP | 10.0.10.1:80, 10.0.10.4:80 |
 | `fe_glpi` → `be_glpi` | 10.0.10.2:8080 | HTTP | 10.0.10.3:80 |
 | `galera_cluster` | 10.0.10.2:3306 | TCP | 10.0.20.1, 10.0.20.2, 10.0.20.3 (:3306) |
-| `stats` | 10.0.10.2:8404 | HTTP | Page de statistiques (accès vADMIN) |
+| `stats` | 10.0.10.2:8404 | HTTP | Page de statistiques (référence ; non activée dans le labo) |
 
 Chaque serveur est surveillé (`check`) : un serveur qui ne répond plus est retiré automatiquement, puis réintégré à son retour (`rise` / `fall`).
-Un en-tête `X-Served-By` indique quel backend a répondu, ce qui rend le failover **observable** avec un simple `curl -I`.
+Un en-tête `X-Served-By` indique quel backend a répondu, ce qui rend le failover **observable** avec un simple `curl -I` (configuration de référence ; pas encore activé dans le labo, où la bascule a été mesurée à 9 s, 6 requêtes sur 6 servies).
 
 Configuration anonymisée : [configs/haproxy/haproxy.cfg.example](configs/haproxy/haproxy.cfg.example)
 
@@ -207,14 +214,30 @@ Configuration anonymisée : [configs/haproxy/haproxy.cfg.example](configs/haprox
 
 - WEB-01 et WEB-02 exécutent **le même code WordPress** et le même `wp-config.php`.
 - Les deux se connectent à la base via **HAProxy** (`DB_HOST = 10.0.10.2:3306`), jamais directement à un nœud.
-- **Galera réplique la base, pas les fichiers** : médias (`wp-content/uploads`), thèmes et extensions sont synchronisés par `rsync` de WEB-01 vers WEB-02. C'est une limite connue (voir [synchronization.md](docs/05-wordpress/synchronization.md)).
+- **Galera réplique la base, pas les fichiers** : médias (`wp-content/uploads`), thèmes et extensions doivent être synchronisés de WEB-01 vers WEB-02 (référence : `rsync`, pas encore en place dans le labo). C'est une limite connue (voir [synchronization.md](docs/05-wordpress/synchronization.md)).
 
 ## GLPI
 
-GLPI-01 (10.0.10.3) est publié via HAProxy sur le port `8080` et utilise le cluster Galera via `10.0.10.2:3306`.
+GLPI-01 (10.0.10.3) est publié via HAProxy sur le port `8080` et utilise le cluster Galera via `10.0.10.2:3306`. Depuis le réseau du labo, le NAT `8082` le joint en direct (`10.0.10.3:80`).
 GLPI n'est **pas redondé** (un seul serveur applicatif) : c'est un SPOF assumé et documenté.
 
 Documentation : [docs/06-glpi/](docs/06-glpi/installation.md)
+
+## Supervision et journalisation
+
+<p align="center">
+  <img src="diagrams/journalisation.svg" alt="Journalisation centralisée : les serveurs envoient leurs journaux en TCP 514 vers ZABBIX à travers pfSense ; LogAnalyzer les affiche" width="900">
+</p>
+
+La VM **ZABBIX** (`10.0.30.3`, vADMIN) réunit trois services, chacun sur son port, sans VM ni adresse supplémentaire :
+
+| Service | Port | Publication | État au 06/11/2026 |
+|---------|------|-------------|--------------------|
+| Zabbix 7.0 LTS | 80 | NAT `2231` | 12 hôtes supervisés ; alertes à configurer |
+| Rsyslog (collecteur) | 514 TCP/UDP | **jamais** | 8/8 VM Linux en envoi automatique |
+| LogAnalyzer 5.0.2 | 8085 | NAT `2233`, réseaux d'administration, compte requis | En service ; verrouillage de `install.php` à faire |
+
+Restent à faire : journaux de pfSense et des postes Windows, rotation, accès chiffré. Documentation : [docs/13-supervision/](docs/13-supervision/rsyslog-loganalyzer.md).
 
 ## Sécurité
 
@@ -222,6 +245,7 @@ Documentation : [docs/06-glpi/](docs/06-glpi/installation.md)
 - **Base de données non exposée** : le VLAN vBDD n'accepte le port 3306 que depuis HAProxy, et les ports Galera uniquement entre nœuds.
 - **Administration** : SSH par clé depuis le VLAN vADMIN uniquement, pas de connexion root, bastion Guacamole.
 - **Moindre privilège** : un compte SQL par application, limité à sa base et à l'IP de HAProxy.
+- **Journaux** : copie centralisée sur ZABBIX ; le port 514 n'est jamais publié ; LogAnalyzer exige un compte **et** une adresse d'administration.
 - **Secrets** : aucun secret dans ce dépôt — fichiers `*.example` avec `<SECRET>` / `<PASSWORD>`. Voir [SECURITY.md](SECURITY.md).
 
 Détails : [docs/07-security/](docs/07-security/network-segmentation.md)
@@ -268,6 +292,7 @@ Le bootstrap Galera **n'est jamais automatisé** : il se fait manuellement, une 
 | [10 — Sauvegarde](docs/10-backup-recovery/strategy.md) | Stratégie, MariaDB, WordPress, GLPI, Proxmox |
 | [11 — BTS SIO](docs/11-bts-sio/skills.md) | Compétences, oral, questions du jury, rétrospective |
 | [12 — Gestion de projet](docs/12-project-management/git-workflow.md) | Git, labels, GitHub Project, release |
+| [13 — Supervision](docs/13-supervision/rsyslog-loganalyzer.md) | Zabbix, Rsyslog, LogAnalyzer, flux pfSense |
 
 Index : [docs/README.md](docs/README.md)
 
@@ -301,7 +326,7 @@ Exemple de sortie attendue :
 [OK]   wsrep_ready = ON
 ```
 
-Matrice de validation (20 tests, T01 à T20) : [docs/08-tests/validation-matrix.md](docs/08-tests/validation-matrix.md)
+Matrice de validation (35 tests, T01 à T35) : [docs/08-tests/validation-matrix.md](docs/08-tests/validation-matrix.md)
 
 ```bash
 make check   # structure du dépôt + secrets + syntaxe shell (poste de développement)
@@ -330,11 +355,25 @@ Ce lab est volontairement transparent sur ce qu'il **ne couvre pas** encore :
 - **HAProxy est un SPOF** : pas de second répartiteur ni d'IP virtuelle (Keepalived / VRRP).
 - **pfSense est un SPOF** : pas de cluster CARP.
 - **Health-check SQL non « wsrep-aware »** : `mysql-check` vérifie que MariaDB répond, pas qu'il est `Synced`.
-- **Écritures en round-robin** sur Galera : risque de conflits de certification sous forte concurrence (acceptable en lab, à revoir en production).
-- **Fichiers WordPress** synchronisés par `rsync`, pas par un stockage partagé.
+- **Écritures en round-robin** sur Galera dans la configuration de référence : risque de conflits de certification. Dans le labo, depuis le 30/10/2026, toutes les requêtes vont à MYSQL-01 (02 et 03 en `backup`).
+- **Fichiers WordPress** : pas encore synchronisés dans le labo (référence : `rsync`, pas de stockage partagé).
 - **HTTP uniquement** : pas de TLS.
 - **Un seul hôte Proxmox** : sa panne arrête tout.
-- **Pas de supervision** ni de sauvegardes automatisées.
+- **Supervision sans alertes** et **pas de sauvegardes automatisées**.
+- **Journaux** : pfSense et postes Windows pas encore collectés ; LogAnalyzer en HTTP (authentification Basic non chiffrée).
+
+## Écarts entre la référence et le labo
+
+Les fichiers `configs/*.example` et les procédures décrivent une **configuration de référence**. Le labo réel diffère sur ces points :
+
+| Sujet | Référence (dépôt) | Labo (relevé) |
+|-------|-------------------|---------------|
+| Contrôle des serveurs web | `/wp-login.php`, `inter 3s` | `GET /` avec en-tête `Host`, `inter 2s fall 3 rise 2` |
+| Contrôle SQL | `mysql-check`, round-robin | `tcp-check`, MYSQL-01 actif, 02 et 03 en `backup` |
+| Page de statistiques 8404, en-tête `X-Served-By` | Présents | Pas encore activés (socket d'administration à la place) |
+| Synchronisation des fichiers WordPress | `rsync` WEB-01 → WEB-02 | Pas encore en place |
+| NAT GLPI | `8082 → 10.0.10.2:8080` (HAProxy) | `8082 → 10.0.10.3:80` (en direct) |
+| Interface pfSense | HTTPS (443) | HTTP (80) |
 
 ## Roadmap
 
@@ -352,7 +391,10 @@ Ce lab est volontairement transparent sur ce qu'il **ne couvre pas** encore :
 - [ ] HTTPS
 - [ ] Health-check Galera *wsrep-aware* (clustercheck)
 - [ ] Stockage partagé WordPress (NFS / GlusterFS)
-- [ ] Supervision (Prometheus + Grafana, ou Zabbix / Centreon)
+- [x] Supervision Zabbix 7.0 LTS (12 hôtes)
+- [x] Journalisation centralisée Rsyslog + LogAnalyzer (8 VM Linux)
+- [ ] Alertes Zabbix et tickets GLPI
+- [ ] Journaux de pfSense et des postes Windows
 - [ ] Sauvegardes automatisées
 - [ ] Tests de restauration planifiés
 
@@ -373,9 +415,9 @@ Issues suggérées et organisation : [docs/12-project-management/github-project.
 > Section reprenable telle quelle dans un portfolio.
 
 - **Projet** — Infrastructure web haute disponibilité (BTS SIO SISR).
-- **Contexte** — Lab virtualisé sous Proxmox : 9 VM Debian, pfSense, 4 VLAN.
+- **Contexte** — Lab virtualisé sous Proxmox : 12 VM (9 Debian, 2 Windows, pfSense), 4 VLAN.
 - **Objectif** — Supprimer les points uniques de défaillance des couches web et données d'un site WordPress.
-- **Technologies** — pfSense, VLAN 802.1Q, HAProxy, MariaDB 10.11, Galera 4, Apache, PHP, WordPress, GLPI, SSH, Bash, Git.
+- **Technologies** — pfSense, VLAN 802.1Q, HAProxy, MariaDB 10.11, Galera 4, Apache, PHP, WordPress, GLPI, Zabbix, Rsyslog, LogAnalyzer, SSH, Bash, Git.
 - **Réalisations** — Cluster Galera 3 nœuds ; répartition de charge HTTP et SQL ; 2 serveurs WordPress ; GLPI ; filtrage deny-by-default ; scripts de validation ; procédures de failover.
 - **Difficultés** — Quorum et bootstrap Galera, `bind-address`, synchronisation des fichiers WordPress, conflit avec le compte système HAProxy, réécritures Apache de GLPI.
 - **Résultats** — Arrêt d'un serveur web ou d'un nœud SQL sans interruption du site ; SPOF résiduels identifiés.
@@ -396,7 +438,7 @@ Aucune capture n'est fabriquée : les emplacements et la convention de nommage s
 
 ```text
 .
-├── docs/           Documentation (sections numérotées 00 à 12)
+├── docs/           Documentation (sections numérotées 00 à 13)
 ├── configs/        Configurations anonymisées (*.example)
 ├── scripts/        Installation, validation, failover, sauvegarde
 ├── generator/      Générateur HTML hors ligne

@@ -11,7 +11,8 @@
 | Application | WEB-01, WEB-02 | WordPress | Oui (2 nœuds actifs) |
 | Application | GLPI-01 | ITSM | Non (SPOF assumé) |
 | Données | MYSQL-01/02/03 | MariaDB Galera | Oui (3 nœuds, quorum) |
-| Administration | ADM-01, Guacamole | Bastion, accès distant | Non (hors chemin du service) |
+| Administration | ADM-01, Guacamole | Annuaire AD, bastion d'accès distant | Non (hors chemin du service) |
+| Supervision et journaux | ZABBIX | Zabbix, Rsyslog central, LogAnalyzer | Non (hors chemin du service) |
 
 ## Principes de conception
 

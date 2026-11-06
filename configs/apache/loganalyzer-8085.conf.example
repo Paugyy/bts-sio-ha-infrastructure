@@ -1,0 +1,26 @@
+# VM : sio2527-ZABBIX-ypaugy (10.0.30.3) — /etc/apache2/sites-available/loganalyzer-8085.conf (extrait)
+# Second site Apache pour LogAnalyzer 5.0.2 ; Zabbix reste sur le port 80. "Listen 8085" est dans /etc/apache2/ports.conf.
+# Exemple : remplacer <RESEAU_DU_POSTE_ADMIN> par la plage réellement retenue (à relire : grep -n Require sur la VM).
+# Le fichier .htpasswd n'est jamais versionné.
+<VirtualHost *:8085>
+    DocumentRoot /var/www/loganalyzer
+    ErrorLog ${APACHE_LOG_DIR}/loganalyzer-error.log
+    CustomLog ${APACHE_LOG_DIR}/loganalyzer-access.log combined
+
+    <Directory /var/www/loganalyzer>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        DirectoryIndex index.php
+        AuthType Basic
+        AuthName "LogAnalyzer - Administration"
+        AuthUserFile /etc/apache2/.htpasswd-loganalyzer
+        <RequireAll>
+            Require valid-user
+            <RequireAny>
+                Require local
+                Require ip 10.0.30.0/24
+                Require ip <RESEAU_DU_POSTE_ADMIN>
+            </RequireAny>
+        </RequireAll>
+    </Directory>
+</VirtualHost>

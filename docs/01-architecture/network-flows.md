@@ -11,14 +11,23 @@ Matrice de **tous les flux légitimes**. Tout flux absent de ce tableau est inte
 | F03 | HAProxy | WEB-01, WEB-02 | TCP 80 | Non (même VLAN) | Répartition HTTP + health-checks |
 | F04 | HAProxy | GLPI-01 | TCP 80 | Non (même VLAN) | Publication GLPI |
 | F05 | WEB-01, WEB-02, GLPI-01 | HAProxy | TCP 3306 | Non (même VLAN) | Requêtes SQL des applications |
-| F06 | HAProxy | MYSQL-01/02/03 | TCP 3306 | Oui | Répartition SQL + `mysql-check` |
+| F06 | HAProxy | MYSQL-01/02/03 | TCP 3306 | Oui | SQL : référence `mysql-check` en round-robin ; labo : MYSQL-01 actif, 02 et 03 en `backup` |
 | F07 | MYSQL-0X | MYSQL-0X | TCP 4567, 4568, 4444 | Non (même VLAN) | Réplication, IST, SST |
 | F08 | ADM-01, Guacamole | vWEB, vBDD | TCP 22 | Oui | Administration SSH |
 | F09 | ADM-01 | HAProxy | TCP 80, 3306, 8080, 8404 | Oui | Tests et statistiques |
-| F10 | ADM-01 | pfSense 10.0.30.254 | TCP 443 | — (interface locale) | Administration pfSense |
-| F11 | WEB-01 | WEB-02 | TCP 22 (rsync over SSH) | Non (même VLAN) | Synchronisation des fichiers WordPress |
+| F10 | vADMIN | pfSense 10.0.30.254 | TCP 80 (labo) · 443 (recommandé) | — (interface locale) | Administration pfSense |
+| F11 | WEB-01 | WEB-02 | TCP 22 (rsync over SSH) | Non (même VLAN) | Synchronisation des fichiers WordPress (référence : pas encore en place dans le labo) |
 | F12 | Tous les VLAN | pfSense (.254) | UDP/TCP 53, UDP 123 | — | DNS, NTP |
 | F13 | Tous les VLAN | Extérieur | TCP 80, 443 | Oui (NAT sortant) | Mises à jour `apt` |
+| F14 | ZABBIX 10.0.30.3 | vWEB, vBDD | TCP 10050 | Oui | Interrogation des agents Zabbix |
+| F15 | ZABBIX 10.0.30.3 | HAProxy 10.0.10.2 | TCP 3306 | Oui | Base de Zabbix sur le cluster |
+| F16 | WEB-01, HAProxy, GLPI-01, WEB-02 · MYSQL-01/02/03 | ZABBIX 10.0.30.3 | TCP 514 | Oui (PASS en tête de vWEB et vBDD) | Envoi des journaux (Rsyslog `omfwd`) |
+| F17 | Guacamole 10.0.30.2 | ZABBIX 10.0.30.3 | TCP 514 | Non (même VLAN) | Envoi des journaux |
+| F18 | pfSense | ZABBIX 10.0.30.3 | UDP 514 | — (émis par le pare-feu) | Journaux du pare-feu (à configurer) |
+| F19 | Réseau labo (WAN) | 10.4.0.198:2231 → 10.0.30.3:80 | TCP | Oui (NAT) | Interface Zabbix |
+| F20 | Réseaux d'administration | 10.4.0.198:2233 → 10.0.30.3:8085 | TCP | Oui (NAT, source restreinte) | LogAnalyzer |
+
+Jamais publiés sur le WAN : 514 (Syslog), 10050 et 10051 (Zabbix), 3306 (MariaDB), UDP 161 (SNMP). Détail : [docs/13-supervision/](../13-supervision/rsyslog-loganalyzer.md).
 
 ## Flux WordPress détaillé
 

@@ -5,7 +5,16 @@
 | # | Statut | Interface | Proto | Destination | Port externe | Cible interne | Port interne | Description |
 |---|--------|-----------|-------|-------------|--------------|---------------|--------------|-------------|
 | 1 | Réel | WAN | TCP | WAN address | 8081 | 10.0.10.2 | 80 | WordPress via HAProxy |
-| 2 | Modèle | WAN | TCP | WAN address | 8082 | 10.0.10.2 | 8080 | GLPI via HAProxy (optionnel) |
+| 2 | Réel | WAN | TCP | WAN address | 8082 | 10.0.10.3 | 80 | GLPI-01 en direct (référence : via HAProxy `10.0.10.2:8080`) |
+| 3 | Réel (désactivé) | WAN | TCP | WAN address | 8083 | 10.0.10.4 | 80 | Test direct de WEB-02 |
+| 4 | Réel | WAN | TCP | WAN address | 8080 | 10.0.30.2 | 8080 | Bastion Guacamole (web) |
+| 5 | Réel | WAN | TCP | WAN address | 2223 | 10.0.30.2 | 22 | SSH du bastion |
+| 6 | Réel | WAN | TCP | WAN address | 2224 à 2230 | WEB-01, MYSQL-01/02/03, HAProxy, GLPI-01, WEB-02 | 22 | SSH de gestion ⚠️ (à remplacer par un VPN) |
+| 7 | Réel | WAN | TCP | WAN address | 2231 | 10.0.30.3 | 80 | Interface Zabbix (`/zabbix/`) |
+| 8 | Réel | WAN | TCP | WAN address | 2232 | 10.0.30.3 | 22 | SSH de ZABBIX |
+| 9 | Réel (06/11/2026) | WAN | TCP | WAN address | 2233 | 10.0.30.3 | 8085 | LogAnalyzer — source limitée à l'alias `LOGANALYZER_ADMIN_NETS` |
+
+> **Jamais publiés :** 514 (Syslog), 10050 et 10051 (Zabbix), 3306 (MariaDB), UDP 161 (SNMP).
 
 Paramètre : *Filter rule association* = **Add associated filter rule** — pfSense crée automatiquement la règle WAN correspondante.
 

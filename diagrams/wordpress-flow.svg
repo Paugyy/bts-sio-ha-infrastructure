@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" width="820" height="340" role="img" aria-labelledby="t d" font-family="Segoe UI, Helvetica, Arial, sans-serif">
   <title id="t">Flux d'une requête WordPress</title>
-  <desc id="d">Le client atteint pfSense sur le port 8081, redirigé vers HAProxy port 80, qui choisit WEB-01 ou WEB-02 ; WordPress interroge la base via HAProxy port 3306, réparti sur trois nœuds Galera.</desc>
+  <desc id="d">Le client atteint pfSense sur le port 8081, redirigé vers HAProxy port 80, qui choisit WEB-01 ou WEB-02 ; WordPress interroge la base via HAProxy port 3306, envoyée au nœud Galera actif (MYSQL-01).</desc>
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3b4656"/></marker>
     <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1e7b46"/></marker>
@@ -54,8 +54,8 @@
   <g font-size="12" fill="#1c2430">
     <text x="20" y="252">1 · Le client ouvre http://10.4.0.198:8081</text>
     <text x="20" y="270">2 · pfSense redirige (DNAT) vers HAProxy 10.0.10.2:80</text>
-    <text x="20" y="288">3 · HAProxy choisit WEB-01 ou WEB-02 (round-robin, health-check /wp-login.php)</text>
-    <text x="20" y="306">4 · PHP ouvre une connexion SQL vers HAProxy :3306, répartie sur MYSQL-01/02/03</text>
-    <text x="20" y="326" fill="#5d6878" font-size="11">Retour : HAProxy ajoute l'en-tête X-Served-By (WEB-01 ou WEB-02)</text>
+    <text x="20" y="288">3 · HAProxy choisit WEB-01 ou WEB-02, chacun son tour (contrôle HTTP toutes les 2 s)</text>
+    <text x="20" y="306">4 · PHP ouvre une connexion SQL vers HAProxy :3306, envoyée à MYSQL-01 (02 et 03 en secours)</text>
+    <text x="20" y="326" fill="#5d6878" font-size="11">Retour : la réponse repasse par HAProxy puis pfSense jusqu'au client</text>
   </g>
 </svg>

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 380" width="780" height="380" role="img" aria-labelledby="t d" font-family="Segoe UI, Helvetica, Arial, sans-serif">
   <title id="t">Carte des points uniques de défaillance</title>
-  <desc id="d">En rouge les SPOF : hôte Proxmox, pfSense, HAProxy, GLPI-01. En vert les composants redondés : WEB-01 et WEB-02, cluster Galera de trois nœuds. En orange : stockage des fichiers WordPress synchronisé par rsync.</desc>
+  <desc id="d">En rouge les SPOF : hôte Proxmox, pfSense, HAProxy, GLPI-01. En vert les composants redondés : WEB-01 et WEB-02, cluster Galera de trois nœuds. En orange : fichiers WordPress pas encore synchronisés entre les deux serveurs.</desc>
   <style>
     .n{font-size:13px;font-weight:600;fill:#1c2430}
     .s{font-size:11px;fill:#4a5565}
@@ -33,7 +33,7 @@
   <text class="s" x="150" y="279" text-anchor="middle">redondé (1 panne tolérée)</text>
 
   <rect class="mid" x="70" y="290" width="160" height="30" rx="5"/>
-  <text class="s" x="150" y="309" text-anchor="middle">fichiers : rsync (divergence)</text>
+  <text class="s" x="150" y="309" text-anchor="middle">fichiers WordPress non synchronisés</text>
 
   <rect class="spof" x="300" y="240" width="180" height="70" rx="6"/>
   <text class="n" x="390" y="262" text-anchor="middle">GLPI-01</text>

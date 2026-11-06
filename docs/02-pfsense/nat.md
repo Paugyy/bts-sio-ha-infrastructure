@@ -42,3 +42,13 @@ curl -sI http://10.4.0.198:8081 | grep -Ei 'HTTP/|X-Served-By'
 ```
 
 Test T18 de la [matrice de validation](../08-tests/validation-matrix.md).
+
+## Supervision et journaux (2231, 2232, 2233)
+
+| Port WAN | Cible | Service | Source |
+|----------|-------|---------|--------|
+| 2231 | 10.0.30.3:80 | Interface Zabbix | any (réseau du labo) |
+| 2232 | 10.0.30.3:22 | SSH de ZABBIX | any (réseau du labo) |
+| 2233 | 10.0.30.3:8085 | LogAnalyzer | alias `LOGANALYZER_ADMIN_NETS` uniquement |
+
+Le NAT conserve l'adresse source du poste : Apache doit aussi l'autoriser (`Require ip`), sinon il répond `403`. Syslog (514) n'est **jamais** publié. Liste complète : [configs/pfsense/nat-rules.md](../../configs/pfsense/nat-rules.md).

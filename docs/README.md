@@ -92,3 +92,7 @@ Les mots de passe apparaissent sous la forme `<PASSWORD>` ou `<SECRET>`. Voir [0
 ### 12 — Gestion de projet
 
 - [Workflow Git](12-project-management/git-workflow.md) · [Labels](12-project-management/labels.md) · [GitHub Project](12-project-management/github-project.md) · [Release v1.0.0](12-project-management/release-v1.0.0.md)
+
+### 13 — Supervision et journalisation
+
+- [Supervision Zabbix 7.0 LTS](13-supervision/zabbix.md) · [Journalisation centralisée : Rsyslog et LogAnalyzer](13-supervision/rsyslog-loganalyzer.md) · [Flux pfSense de la journalisation](13-supervision/pfsense-flux-journalisation.md)

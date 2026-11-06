@@ -1,0 +1,16 @@
+# VM : sio2527-ZABBIX-ypaugy (10.0.30.3) — /etc/rsyslog.d/10-central-receiver.conf
+# Récepteur central TCP/UDP 514 (06/11/2026). Contenu de la procédure : à rapprocher du fichier réel (cat) avant de le déclarer identique.
+# Ne jamais publier le port 514 sur le WAN.
+module(load="imudp")
+module(load="imtcp")
+
+ruleset(name="remoteLogs") {
+    action(
+        type="omfile"
+        file="/var/log/remote-syslog/central.log"
+        template="RSYSLOG_TraditionalFileFormat"
+    )
+}
+
+input(type="imudp" port="514" ruleset="remoteLogs")
+input(type="imtcp" port="514" ruleset="remoteLogs")

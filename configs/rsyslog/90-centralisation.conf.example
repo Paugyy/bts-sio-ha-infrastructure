@@ -1,0 +1,15 @@
+# VM : les 8 émetteurs Debian (web-01, web-02, haproxy, glpi, bdd-01/02/03, guacamol) — /etc/rsyslog.d/90-centralisation.conf
+# JAMAIS sur zabbix (10.0.30.3), qui se renverrait ses propres messages.
+# Envoi automatique validé 8/8 le 06/11/2026 (logger -t SYSLOG-AUTO). Garanties de la file d'attente : à tester.
+# Contenu de la procédure : à rapprocher du fichier réel de chaque VM avant de le déclarer identique.
+*.* action(
+    type="omfwd"
+    target="10.0.30.3"
+    port="514"
+    protocol="tcp"
+    queue.type="LinkedList"
+    queue.filename="syslog-forward"
+    queue.maxDiskSpace="512m"
+    queue.saveOnShutdown="on"
+    action.resumeRetryCount="-1"
+)

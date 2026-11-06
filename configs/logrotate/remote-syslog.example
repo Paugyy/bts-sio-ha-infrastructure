@@ -1,0 +1,15 @@
+# VM : sio2527-ZABBIX-ypaugy (10.0.30.3) — /etc/logrotate.d/remote-syslog
+# PROPOSITION NON TESTÉE (06/11/2026) : 26 semaines ≈ 6 mois (durée des journaux de connexion, DAT R1).
+# Tester avec "sudo logrotate -d /etc/logrotate.d/remote-syslog" puis une vraie rotation en maintenance.
+/var/log/remote-syslog/central.log {
+    weekly
+    rotate 26
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 root www-data
+    postrotate
+        /usr/lib/rsyslog/rsyslog-rotate
+    endscript
+}

@@ -16,6 +16,7 @@ Un **SPOF** (*Single Point Of Failure*) est un composant unique dont la panne ar
 | GLPI-01 | 1 | Aucune | GLPI indisponible ; WordPress non affecté | 2e serveur GLPI derrière HAProxy + sessions/fichiers partagés |
 | Stockage WordPress (`wp-content/uploads`) | 2 copies | Synchro `rsync` manuelle/planifiée | Divergence : média absent sur un nœud (image cassée 1 fois sur 2) | NFS/GlusterFS, ou stockage objet (S3) |
 | ADM-01 / Guacamole | 1 + 1 | Partielle | Aucun impact sur le service ; administration plus difficile | Console Proxmox en secours |
+| ZABBIX (supervision + journaux) | 1 | Aucune | Plus d'alertes ni de collecte des journaux ; aucun impact sur le service (les émetteurs gardent leurs journaux en file d'attente) | Séparer la collecte des journaux de la supervision |
 | Alimentation / réseau physique du labo | 1 | Aucune | Total | Hors périmètre |
 
 ## Analyse détaillée

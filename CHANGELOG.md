@@ -11,7 +11,22 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), ver
 - HAProxy secondaire + Keepalived (IP virtuelle).
 - Health-check Galera *wsrep-aware*.
 - HTTPS.
-- Supervision et sauvegardes automatisées.
+- Alertes Zabbix, journaux de pfSense et des postes Windows, sauvegardes automatisées.
+
+## [1.1.0] — 2026-11-06
+
+### Ajouté
+
+- **Supervision** : VM ZABBIX (`10.0.30.3`), Zabbix 7.0 LTS, 12 hôtes ; publication `WAN:2231`.
+- **Journalisation centralisée** : Rsyslog (TCP/UDP 514) sur ZABBIX, envoi automatique depuis les 8 VM Linux (`omfwd` TCP avec file d'attente), LogAnalyzer 5.0.2 sur le port 8085 publié par `WAN:2233` pour les réseaux d'administration.
+- Section [docs/13-supervision/](docs/13-supervision/rsyslog-loganalyzer.md), exemples `configs/rsyslog/`, `configs/apache/loganalyzer-8085.conf.example`, `configs/logrotate/`.
+- Schéma `diagrams/journalisation.svg`, tests T21 à T35, incidents LOG-01 à LOG-10.
+
+### Modifié
+
+- Plan d'adressage : ADM-01 (contrôleur de domaine AD, Windows Server 2022), ZABBIX, CLI-01 ; NAT relus sur la configuration réelle (8082 vers GLPI-01 en direct, 2223 à 2233).
+- Schémas mis à jour (ZABBIX, CLI-01, flux Syslog, valeurs mesurées : contrôle toutes les 2 s, bascule 9 s) ; `vmbr0`.
+- README : section « Écarts entre la référence et le labo » (contrôles HAProxy, SQL sur MYSQL-01 seul, pas de page 8404 ni de `X-Served-By`, fichiers WordPress non synchronisés).
 
 ## [1.0.0] — 2026-10-01
 

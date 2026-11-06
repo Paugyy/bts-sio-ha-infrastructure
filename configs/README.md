@@ -19,6 +19,10 @@ Toutes les configurations sont publiées sous forme de fichiers **`.example` ano
 | [ssh/linux-ssh-config.example](ssh/linux-ssh-config.example) | ADM-01 | `~/.ssh/config` |
 | [ssh/windows-ssh-config.example](ssh/windows-ssh-config.example) | Poste Windows | `C:\Users\<USER>\.ssh\config` |
 | [pfsense/](pfsense/README.md) | pfSense | Interface web (tableaux de règles) |
+| [rsyslog/10-central-receiver.conf.example](rsyslog/10-central-receiver.conf.example) | ZABBIX | `/etc/rsyslog.d/10-central-receiver.conf` |
+| [rsyslog/90-centralisation.conf.example](rsyslog/90-centralisation.conf.example) | 8 VM Linux émettrices | `/etc/rsyslog.d/90-centralisation.conf` |
+| [apache/loganalyzer-8085.conf.example](apache/loganalyzer-8085.conf.example) | ZABBIX | `/etc/apache2/sites-available/loganalyzer-8085.conf` |
+| [logrotate/remote-syslog.example](logrotate/remote-syslog.example) | ZABBIX | `/etc/logrotate.d/remote-syslog` (proposition non testée) |
 
 ## Utilisation
 

@@ -411,6 +411,24 @@ ps -o user= -C haproxy | sort -u   # haproxy
 
 ---
 
+## Journalisation centralisée (06/11/2026)
+
+Mise en service de Rsyslog et LogAnalyzer sur ZABBIX (10.0.30.3). Numérotation propre à cette section (LOG-xx). Procédure : [docs/13-supervision/rsyslog-loganalyzer.md](../13-supervision/rsyslog-loganalyzer.md).
+
+| ID | VM | Symptôme | Cause | Correction | Statut |
+|----|----|----------|-------|------------|--------|
+| LOG-01 | ZABBIX | `install: invalid user 'syslog'` | Pas de compte `syslog` sur Debian 12 ; `rsyslogd` tourne sous root | Répertoire et fichier en `root:www-data` (`0750` / `0640`) | Résolu |
+| LOG-02 | ZABBIX | `Permission denied` sur `central.log` (compte `zabbix`) | Droits volontairement restreints | Lecture avec `sudo`, pas de `chmod 777` | Voulu |
+| LOG-03 | ZABBIX | `AH00558: Could not reliably determine the server's fully qualified domain name` | Pas de `ServerName` global | Aucune (`Syntax OK`, non bloquant) | Accepté |
+| LOG-04 | pfSense | `http://10.4.0.198:2233/` inaccessible | Ni NAT 2233 ni règle WAN vers 8085 dans la configuration | NAT et règle ajoutés | Résolu |
+| LOG-05 | ZABBIX | `403 Forbidden`, `AH01630: client denied by server configuration` | Le NAT garde l'adresse du poste, absente de `Require ip` | Réseau du poste ajouté, `Require valid-user` conservé | Résolu |
+| LOG-06 | ZABBIX | `Critical Error occured — main configuration file is missing!` | Assistant LogAnalyzer pas encore joué | `install.php`, source `SYSLOG-CENTRAL` en *Diskfile* | Résolu |
+| LOG-07 | WEB-01 | `central.log: No such file or directory` | Contrôle lancé sur l'émetteur au lieu du collecteur | Lire `central.log` sur ZABBIX | Erreur de procédure |
+| LOG-08 | WEB-01 (et les autres émetteurs) | `rsyslogd: command not found`, `Unit rsyslog.service could not be found` | Rsyslog pas installé alors que `90-centralisation.conf` existait | `apt install rsyslog`, `systemctl enable --now rsyslog` | Résolu : 8/8 VM |
+| LOG-09 | Poste → MYSQL-03 | `REMOTE HOST IDENTIFICATION HAS CHANGED` | Ancienne clé d'hôte dans `known_hosts` | Empreinte vérifiée, entrée ciblée retirée | Résolu |
+| LOG-10 | Poste → MYSQL-03 | `Permission denied (publickey)` | Cause non établie | Compte, `authorized_keys` et droits vérifiés | Connexion rétablie |
+| OBS-11 | MYSQL-01 | `mariadbd` : `Aborted connection … to db: 'zabbix'` | Non diagnostiqué | — | À surveiller |
+
 ## Ajouter un incident
 
 Copier un bloc ci-dessus, incrémenter l'ID, renseigner tous les champs, ajouter la ligne au tableau et un commit `docs(troubleshooting): add INC-0X ...`. Méthode : [diagnostic-methodology.md](diagnostic-methodology.md).

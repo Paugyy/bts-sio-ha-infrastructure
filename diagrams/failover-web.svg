@@ -28,7 +28,7 @@
   <rect class="up" x="140" y="170" width="100" height="44" rx="6"/>
   <text class="n" x="190" y="190" text-anchor="middle">WEB-02</text>
   <text class="s" x="190" y="205" text-anchor="middle">UP</text>
-  <text class="s" x="130" y="240" text-anchor="middle">X-Served-By alterne</text>
+  <text class="s" x="130" y="240" text-anchor="middle">WEB-01 et WEB-02 alternent</text>
 
   <!-- État 2 -->
   <text class="h" x="390" y="58" text-anchor="middle">2 · Panne de WEB-01</text>
@@ -42,8 +42,8 @@
   <rect class="up" x="400" y="170" width="100" height="44" rx="6"/>
   <text class="n" x="450" y="190" text-anchor="middle">WEB-02</text>
   <text class="s" x="450" y="205" text-anchor="middle">100 % du trafic</text>
-  <text class="s" x="390" y="240" text-anchor="middle">fall 3 × inter 3s ≈ 9 s</text>
-  <text class="s" x="390" y="256" text-anchor="middle">retries + redispatch : 0 erreur</text>
+  <text class="s" x="390" y="240" text-anchor="middle">fall 3 × inter 2 s · mesuré : 9 s</text>
+  <text class="s" x="390" y="256" text-anchor="middle">6 requêtes sur 6 servies (test T14)</text>
 
   <!-- État 3 -->
   <text class="h" x="650" y="58" text-anchor="middle">3 · Retour de WEB-01</text>
@@ -57,7 +57,7 @@
   <rect class="up" x="660" y="170" width="100" height="44" rx="6"/>
   <text class="n" x="710" y="190" text-anchor="middle">WEB-02</text>
   <text class="s" x="710" y="205" text-anchor="middle">UP</text>
-  <text class="s" x="650" y="240" text-anchor="middle">rise 2 × inter 3s ≈ 6 s</text>
+  <text class="s" x="650" y="240" text-anchor="middle">rise 2 × inter 2 s ≈ 4 s</text>
   <text class="s" x="650" y="256" text-anchor="middle">réintégration automatique</text>
 
   <line x1="255" y1="140" x2="270" y2="140" stroke="#8a95a5" stroke-width="2" marker-end="url(#a)"/>

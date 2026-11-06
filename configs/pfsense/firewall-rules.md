@@ -81,3 +81,19 @@ nc -zv -w 3 10.0.20.1 3306
 ```
 
 Plan de test complet : [docs/08-tests/network-tests.md](../../docs/08-tests/network-tests.md)
+
+## Journalisation centralisée (06/11/2026)
+
+Ajouts testés le 06/11/2026 (LogAnalyzer ouvert depuis le poste d'administration, journaux reçus des 7 serveurs de vWEB et vBDD). Procédure : [docs/13-supervision/pfsense-flux-journalisation.md](../../docs/13-supervision/pfsense-flux-journalisation.md).
+
+| Élément | Contenu | Position |
+|---------|---------|----------|
+| Alias `SYSLOG_WEB_SENDERS` | 10.0.10.1, 10.0.10.2, 10.0.10.3, 10.0.10.4 | — |
+| Alias `SYSLOG_BDD_SENDERS` | 10.0.20.1, 10.0.20.2, 10.0.20.3 | — |
+| Alias `LOGANALYZER_ADMIN_NETS` | Réseaux d'administration (à garder aussi étroits que possible) | — |
+| vWEB : PASS TCP `SYSLOG_WEB_SENDERS` → 10.0.30.3:514 | Envoi des journaux | **Au-dessus** du BLOCK vWEB → vADMIN |
+| vBDD : PASS TCP `SYSLOG_BDD_SENDERS` → 10.0.30.3:514 | Envoi des journaux | **Au-dessus** du BLOCK vBDD → vADMIN |
+| WAN : PASS TCP `LOGANALYZER_ADMIN_NETS` → 10.0.30.3:8085 | Associée au NAT 2233 | Au-dessus du `DEFAULT-DENY` |
+| vADMIN | Aucune règle : Guacamole et ZABBIX sont dans le même VLAN | — |
+
+Le `DEFAULT-DENY BLOCK ALL` reste **la dernière règle** de chaque interface.
